@@ -61,7 +61,58 @@ def help():
 
 @app.route('/search')
 def search():
-    return render_template('search.html')
+    query = request.args.get('text_search', '')
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    user_search = request.args.get('user_search', '')
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+
+    # Base query
+    query_obj = Playlist.query
+
+    # Add search conditions
+    if query:
+        query_obj = query_obj.filter(
+            db.or_(
+                Playlist.title.ilike(f'%{query}%'),
+                Playlist.videos.any(Video.title.ilike(f'%{query}%'))
+            )
+        )
+    
+    # Date range filter
+    if date_from:
+        query_obj = query_obj.filter(Playlist.created_at >= date_from)
+    if date_to:
+        query_obj = query_obj.filter(Playlist.created_at <= date_to)
+
+    # User search
+    if user_search:
+        query_obj = query_obj.join(User).filter(
+            db.or_(
+                User.username.ilike(f'%{user_search}%'),
+                User.first_name.ilike(f'%{user_search}%'),
+                User.last_name.ilike(f'%{user_search}%'),
+                User.email.ilike(f'%{user_search}%')
+            )
+        )
+
+    # Show only public playlists or user's own playlists
+    if 'user_id' in session:
+        query_obj = query_obj.filter(
+            db.or_(
+                Playlist.is_public == True,
+                Playlist.user_id == session['user_id']
+            )
+        )
+    else:
+        query_obj = query_obj.filter(Playlist.is_public == True)
+
+    # Order by latest first and paginate
+    query_obj = query_obj.order_by(Playlist.created_at.desc())
+    results = query_obj.paginate(page=page, per_page=per_page)
+
+    return render_template('search.html', results=results)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
