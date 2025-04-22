@@ -28,7 +28,7 @@ db.init_app(app)
 # Initialize the database
 with app.app_context():
     db.create_all()
-    
+
     # Create a default user if none exists
     if User.query.count() == 0:
         default_user = User(
@@ -40,7 +40,7 @@ with app.app_context():
         )
         db.session.add(default_user)
         db.session.commit()
-    
+
     # Add a context processor to make current time available in templates
     @app.context_processor
     def inject_now():
@@ -71,13 +71,13 @@ def register():
         password = request.form.get('password')
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
-        
+
         # Check if username or email already exists
         existing_user = User.query.filter((User.username == username) | (User.email == email)).first()
         if existing_user:
             flash('Username or email already exists')
             return render_template('register.html')
-        
+
         # Create new user
         new_user = User(
             username=username,
@@ -86,13 +86,13 @@ def register():
             first_name=first_name,
             last_name=last_name
         )
-        
+
         db.session.add(new_user)
         db.session.commit()
-        
+
         flash('Registration successful! Please log in.')
         return redirect(url_for('login'))
-    
+
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -100,18 +100,18 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
+
         user = User.query.filter_by(username=username).first()
-        
+
         if user and check_password_hash(user.password_hash, password):
             session['user_id'] = user.id
-            
+
             # Redirect to requested page or home page
             redirect_url = session.pop('redirect_after_login', 'index')
             return redirect(url_for(redirect_url))
-        
+
         flash('Invalid username or password')
-        
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -126,10 +126,10 @@ def profile(user_id=None):
         user_id = session['user_id']
     elif user_id is None:
         return redirect(url_for('login'))
-    
+
     user = User.query.get_or_404(user_id)
     is_current_user = 'user_id' in session and session['user_id'] == user_id
-    
+
     # Check if current user is following this profile
     is_following = False
     if 'user_id' in session and session['user_id'] != user_id:
@@ -138,24 +138,24 @@ def profile(user_id=None):
             following_id=user_id
         ).first()
         is_following = following is not None
-    
+
     # Get user's playlists
     show_private = is_current_user
     if show_private:
         playlists = Playlist.query.filter_by(user_id=user_id).all()
     else:
         playlists = Playlist.query.filter_by(user_id=user_id, is_public=True).all()
-    
+
     # Get users that this user is following
     following = db.session.query(User).join(
         Follower, User.id == Follower.following_id
     ).filter(Follower.follower_id == user_id).all()
-    
+
     # Get users following this user
     followers = db.session.query(User).join(
         Follower, User.id == Follower.follower_id
     ).filter(Follower.following_id == user_id).all()
-    
+
     return render_template(
         'profile.html', 
         user=user, 
@@ -172,13 +172,13 @@ def edit_profile():
     if 'user_id' not in session:
         flash('Παρακαλώ συνδεθείτε για να επεξεργαστείτε το προφίλ σας')
         return redirect(url_for('login'))
-    
+
     user_id = session['user_id']
     user = User.query.get_or_404(user_id)
-    
+
     if request.method == 'POST':
         action = request.form.get('action')
-        
+
         if action == 'update_profile':
             # Update user profile
             username = request.form.get('username')
@@ -188,83 +188,83 @@ def edit_profile():
             current_password = request.form.get('current_password')
             new_password = request.form.get('new_password')
             confirm_password = request.form.get('confirm_password')
-            
+
             # Validate input
             if not username or not email or not first_name or not last_name:
                 flash('Όλα τα πεδία είναι υποχρεωτικά')
                 return render_template('edit_profile.html', user=user)
-            
+
             # Check if username or email is already taken by another user
             existing_user = User.query.filter(
                 (User.username == username) | (User.email == email),
                 User.id != user_id
             ).first()
-            
+
             if existing_user:
                 if existing_user.username == username:
                     flash('Το όνομα χρήστη χρησιμοποιείται ήδη')
                 else:
                     flash('Το email χρησιμοποιείται ήδη')
                 return render_template('edit_profile.html', user=user)
-            
+
             # Update user details
             user.username = username
             user.email = email
             user.first_name = first_name
             user.last_name = last_name
-            
+
             # Update password if provided
             if new_password:
                 # Verify current password
                 if not check_password_hash(user.password_hash, current_password):
                     flash('Ο τρέχων κωδικός πρόσβασης είναι λανθασμένος')
                     return render_template('edit_profile.html', user=user)
-                
+
                 # Verify new password and confirmation match
                 if new_password != confirm_password:
                     flash('Οι νέοι κωδικοί πρόσβασης δεν ταιριάζουν')
                     return render_template('edit_profile.html', user=user)
-                
+
                 # Update password
                 user.password_hash = generate_password_hash(new_password)
-            
+
             db.session.commit()
             flash('Το προφίλ σας ενημερώθηκε με επιτυχία')
             return redirect(url_for('profile'))
-            
+
         elif action == 'delete_account':
             # Verify password before deleting account
             password = request.form.get('password')
-            
+
             if not check_password_hash(user.password_hash, password):
                 flash('Ο κωδικός πρόσβασης είναι λανθασμένος')
                 return render_template('edit_profile.html', user=user)
-            
+
             # Delete all user data
-            
+
             # 1. Delete all videos from user's playlists
             user_playlists = Playlist.query.filter_by(user_id=user_id).all()
             for playlist in user_playlists:
                 Video.query.filter_by(playlist_id=playlist.id).delete()
-            
+
             # 2. Delete all playlists
             Playlist.query.filter_by(user_id=user_id).delete()
-            
+
             # 3. Delete all following relationships
             Follower.query.filter(
                 (Follower.follower_id == user_id) | (Follower.following_id == user_id)
             ).delete()
-            
+
             # 4. Delete the user
             db.session.delete(user)
             db.session.commit()
-            
+
             # Clear session
             session.clear()
-            
+
             flash('Ο λογαριασμός σας έχει διαγραφεί με επιτυχία')
             return redirect(url_for('index'))
-    
+
     return render_template('edit_profile.html', user=user)
 
 @app.route('/follow/<int:user_id>', methods=['POST'])
@@ -273,26 +273,26 @@ def follow_user(user_id):
     if 'user_id' not in session:
         flash('Please log in to follow users')
         return redirect(url_for('login'))
-    
+
     current_user_id = session['user_id']
-    
+
     # Check if user exists
     target_user = User.query.get_or_404(user_id)
-    
+
     # Can't follow yourself
     if current_user_id == user_id:
         flash('You cannot follow yourself')
         return redirect(url_for('profile', user_id=user_id))
-    
+
     action = request.form.get('action')
-    
+
     if action == 'follow':
         # Check if already following
         existing = Follower.query.filter_by(
             follower_id=current_user_id,
             following_id=user_id
         ).first()
-        
+
         if not existing:
             new_follower = Follower(
                 follower_id=current_user_id,
@@ -303,32 +303,32 @@ def follow_user(user_id):
             flash(f'You are now following {target_user.username}')
         else:
             flash(f'You are already following {target_user.username}')
-    
+
     elif action == 'unfollow':
         existing = Follower.query.filter_by(
             follower_id=current_user_id,
             following_id=user_id
         ).first()
-        
+
         if existing:
             db.session.delete(existing)
             db.session.commit()
             flash(f'You have unfollowed {target_user.username}')
         else:
             flash(f'You are not following {target_user.username}')
-    
+
     return redirect(url_for('profile', user_id=user_id))
 
 @app.route('/playlists')
 def playlists():
     page = request.args.get('page', 1, type=int)
     per_page = 12
-    
+
     # Get public playlists with pagination
     playlists = Playlist.query.filter_by(is_public=True).order_by(
         Playlist.created_at.desc()
     ).paginate(page=page, per_page=per_page)
-    
+
     return render_template('playlists.html', playlists=playlists)
 
 @app.route('/create_playlist', methods=['GET', 'POST'])
@@ -338,44 +338,44 @@ def create_playlist():
         session['redirect_after_login'] = 'create_playlist'
         flash('Please log in to create a playlist')
         return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
         title = request.form.get('title')
         is_public = 'is_public' in request.form
         user_id = session['user_id']
-        
+
         # Validate input
         if not title:
             flash('Playlist title is required')
             return render_template('create_playlist.html')
-        
+
         # Create new playlist
         new_playlist = Playlist(
             title=title,
             is_public=is_public,
             user_id=user_id
         )
-        
+
         db.session.add(new_playlist)
         db.session.commit()
-        
+
         flash('Playlist created successfully!')
         return redirect(url_for('view_playlist', playlist_id=new_playlist.id))
-    
+
     return render_template('create_playlist.html')
 
 @app.route('/playlist/<int:playlist_id>')
 def view_playlist(playlist_id):
     playlist = Playlist.query.get_or_404(playlist_id)
-    
+
     # Check if user can access this playlist
     can_access = True
     can_edit = False
-    
+
     if 'user_id' in session:
         user_id = session['user_id']
         can_edit = (user_id == playlist.user_id)
-        
+
         # Non-public playlists can only be accessed by owner or followers
         if not playlist.is_public and user_id != playlist.user_id:
             following = Follower.query.filter_by(
@@ -386,27 +386,27 @@ def view_playlist(playlist_id):
     else:
         # Non-authenticated users can only access public playlists
         can_access = playlist.is_public
-    
+
     if not can_access:
         flash('You do not have permission to view this playlist')
         return redirect(url_for('playlists'))
-    
+
     # Get videos in the playlist
     videos = Video.query.filter_by(playlist_id=playlist_id).order_by(Video.added_at).all()
-    
+
     # Get video to play from URL or use first one
     video_id = request.args.get('video')
     current_video = None
-    
+
     if video_id:
         current_video = Video.query.filter_by(
             playlist_id=playlist_id, 
             youtube_id=video_id
         ).first()
-    
+
     if not current_video and videos:
         current_video = videos[0]
-    
+
     return render_template(
         'playlist_view.html', 
         playlist=playlist,
@@ -421,26 +421,26 @@ def edit_playlist(playlist_id):
     if 'user_id' not in session:
         flash('Please log in to edit playlists')
         return redirect(url_for('login'))
-    
+
     # Get playlist
     playlist = Playlist.query.get_or_404(playlist_id)
-    
+
     # Check if user owns the playlist
     if playlist.user_id != session['user_id']:
         flash('You do not have permission to edit this playlist')
         return redirect(url_for('view_playlist', playlist_id=playlist_id))
-    
+
     # Get videos in the playlist
     videos = Video.query.filter_by(playlist_id=playlist_id).order_by(Video.added_at).all()
-    
+
     if request.method == 'POST':
         action = request.form.get('action')
-        
+
         if action == 'update_details':
             # Update playlist details
             title = request.form.get('title')
             is_public = 'is_public' in request.form
-            
+
             if not title:
                 flash('Playlist title is required')
             else:
@@ -448,24 +448,24 @@ def edit_playlist(playlist_id):
                 playlist.is_public = is_public
                 db.session.commit()
                 flash('Playlist updated successfully')
-                
+
         elif action == 'remove_video' and request.form.get('video_id'):
             # Remove video from playlist
             video_id = int(request.form.get('video_id'))
             video = Video.query.get(video_id)
-            
+
             if video and video.playlist_id == playlist_id:
                 db.session.delete(video)
                 db.session.commit()
                 flash('Video removed from playlist')
-                
+
         elif action == 'delete_playlist':
             # Delete the entire playlist
             db.session.delete(playlist)
             db.session.commit()
             flash('Playlist deleted successfully')
             return redirect(url_for('profile'))
-    
+
     return render_template(
         'edit_playlist.html',
         playlist=playlist,
@@ -478,29 +478,29 @@ def add_video(playlist_id):
     if 'user_id' not in session:
         flash('Παρακαλώ συνδεθείτε για να προσθέσετε βίντεο')
         return redirect(url_for('login'))
-    
+
     # Get playlist
     playlist = Playlist.query.get_or_404(playlist_id)
-    
+
     # Check if user owns the playlist
     if playlist.user_id != session['user_id']:
         flash('Δεν έχετε δικαίωμα επεξεργασίας αυτής της λίστας')
         return redirect(url_for('view_playlist', playlist_id=playlist_id))
-    
+
     # Store the current playlist_id in session for the OAuth callback
     session['current_playlist_id'] = playlist_id
-    
+
     if request.method == 'POST':
         youtube_id = request.form.get('youtube_id')
         title = request.form.get('title')
-        
+
         if youtube_id and title:
             # Check if video already exists in playlist
             existing = Video.query.filter_by(
                 playlist_id=playlist_id,
                 youtube_id=youtube_id
             ).first()
-            
+
             if not existing:
                 new_video = Video(
                     playlist_id=playlist_id,
@@ -512,23 +512,23 @@ def add_video(playlist_id):
                 flash('Το βίντεο προστέθηκε στη λίστα')
             else:
                 flash('Αυτό το βίντεο υπάρχει ήδη στη λίστα')
-                
+
         return redirect(url_for('add_video', playlist_id=playlist_id))
-    
+
     # Get search query
     query = request.args.get('q', '')
     search_results = []
-    
+
     # Check if we have YouTube credentials
     has_youtube_auth = 'youtube_credentials' in session
-    
+
     # Perform search if query provided and authenticated
     if query and has_youtube_auth:
         try:
             # Import YouTube API modules
             from youtube_api import get_youtube_client, search_videos
             from google.oauth2.credentials import Credentials
-            
+
             # Create credentials from stored session data
             credentials = Credentials(
                 token=session['youtube_credentials']['token'],
@@ -538,13 +538,13 @@ def add_video(playlist_id):
                 client_secret=session['youtube_credentials']['client_secret'],
                 scopes=session['youtube_credentials']['scopes']
             )
-            
+
             # Build YouTube client
             youtube = get_youtube_client(credentials)
-            
+
             # Search videos
             response = search_videos(youtube, query)
-            
+
             # Extract search results
             if 'items' in response:
                 search_results = response['items']
@@ -554,7 +554,7 @@ def add_video(playlist_id):
             # If token expired, clear credentials
             session.pop('youtube_credentials', None)
             has_youtube_auth = False
-    
+
     return render_template(
         'add_video.html',
         playlist=playlist,
@@ -571,22 +571,22 @@ def youtube_auth():
     if 'user_id' not in session:
         flash('Παρακαλώ συνδεθείτε για να χρησιμοποιήσετε την αναζήτηση YouTube')
         return redirect(url_for('login'))
-    
+
     # Import YouTube API module
     from youtube_api import get_oauth_flow
-    
+
     # Create flow instance
     flow = get_oauth_flow()
-    
+
     # Generate authorization URL
     authorization_url, state = flow.authorization_url(
         access_type='offline',
         include_granted_scopes='true'
     )
-    
+
     # Store the state in the session for later validation
     session['youtube_oauth_state'] = state
-    
+
     # Redirect to Google authorization page
     return redirect(authorization_url)
 
@@ -596,24 +596,24 @@ def youtube_oauth_callback():
     if 'error' in request.args:
         flash(f'Σφάλμα άδειας: {request.args.get("error")}')
         return redirect(url_for('add_video', playlist_id=session.get('current_playlist_id', 0)))
-    
+
     # Ensure state parameter matches to prevent CSRF
     if 'youtube_oauth_state' not in session:
         flash('Μη έγκυρη κατάσταση επαλήθευσης. Προσπαθήστε ξανά.')
         return redirect(url_for('index'))
-    
+
     # Import YouTube API module
     from youtube_api import get_oauth_flow
-    
+
     # Create flow instance
     flow = get_oauth_flow()
-    
+
     # Complete the OAuth flow and obtain credentials
     flow.fetch_token(
         authorization_response=request.url,
         state=session['youtube_oauth_state']
     )
-    
+
     # Get credentials and store in session
     credentials = flow.credentials
     session['youtube_credentials'] = {
@@ -624,10 +624,10 @@ def youtube_oauth_callback():
         'client_secret': credentials.client_secret,
         'scopes': credentials.scopes
     }
-    
+
     # Clear state
     session.pop('youtube_oauth_state', None)
-    
+
     # Redirect to the video search page
     playlist_id = session.get('current_playlist_id', 0)
     if playlist_id:
@@ -639,10 +639,10 @@ def youtube_oauth_callback():
 @app.route('/api/youtube/search')
 def search_youtube():
     query = request.args.get('q', '')
-    
+
     if not query:
         return jsonify({'items': []})
-    
+
     # Check if we have YouTube credentials
     if 'youtube_credentials' not in session:
         return jsonify({
@@ -650,12 +650,12 @@ def search_youtube():
             'message': 'Απαιτείται σύνδεση με το λογαριασμό YouTube',
             'auth_url': url_for('youtube_auth')
         })
-    
+
     try:
         # Import YouTube API modules
         from youtube_api import get_youtube_client, search_videos
         from google.oauth2.credentials import Credentials
-        
+
         # Create credentials from stored session data
         credentials = Credentials(
             token=session['youtube_credentials']['token'],
@@ -665,15 +665,15 @@ def search_youtube():
             client_secret=session['youtube_credentials']['client_secret'],
             scopes=session['youtube_credentials']['scopes']
         )
-        
+
         # Build YouTube client
         youtube = get_youtube_client(credentials)
-        
+
         # Search videos
         results = search_videos(youtube, query)
-        
+
         return jsonify(results)
-        
+
     except Exception as e:
         app.logger.error(f"YouTube API Error: {str(e)}")
         # If token expired, clear credentials and require re-authentication
