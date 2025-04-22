@@ -1,21 +1,32 @@
 {% extends "layout.html" %}
 
-{% block title %}Add Videos - {{ playlist.title }} - Streamify{% endblock %}
+{% block title %}Προσθήκη Βίντεο - {{ playlist.title }} - Streamify{% endblock %}
 
 {% block content %}
 <section class="add-video-section">
     <div class="container">
         <div class="section-header">
-            <h1>Add Videos to "{{ playlist.title }}"</h1>
-            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Back to Playlist</a>
+            <h1>Προσθήκη Βίντεο στη Λίστα "{{ playlist.title }}"</h1>
+            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Επιστροφή στη Λίστα</a>
         </div>
         
+        {% if not has_youtube_auth %}
+        <div class="youtube-auth-message">
+            <div class="youtube-auth-content">
+                <h2>Απαιτείται Πρόσβαση YouTube</h2>
+                <p>Για να αναζητήσετε και να προσθέσετε βίντεο από το YouTube, χρειάζεται να συνδεθείτε με το λογαριασμό σας.</p>
+                <a href="{{ auth_url }}" class="btn btn-primary youtube-auth-btn">
+                    <i class="fab fa-youtube"></i> Σύνδεση με YouTube
+                </a>
+            </div>
+        </div>
+        {% else %}
         <div class="search-container">
             <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="GET" class="search-form">
                 <div class="search-input">
-                    <input type="text" name="q" id="search-query" placeholder="Search for YouTube videos..." value="{{ query }}" required>
+                    <input type="text" name="q" id="search-query" placeholder="Αναζήτηση βίντεο στο YouTube..." value="{{ query }}" required>
                     <button type="submit" class="search-btn">
-                        <i class="fas fa-search"></i> Search
+                        <i class="fas fa-search"></i> Αναζήτηση
                     </button>
                 </div>
             </form>
@@ -23,7 +34,7 @@
         
         {% if query %}
             <div class="search-results">
-                <h2>Search Results for "{{ query }}"</h2>
+                <h2>Αποτελέσματα Αναζήτησης για "{{ query }}"</h2>
                 
                 {% if search_results %}
                     <div class="video-grid">
@@ -33,7 +44,7 @@
                                     <img src="{{ video.snippet.thumbnails.medium.url }}" alt="{{ video.snippet.title }}">
                                     <div class="video-duration">
                                         <a href="https://www.youtube.com/watch?v={{ video.id.videoId }}" target="_blank" class="preview-btn">
-                                            <i class="fas fa-external-link-alt"></i> Preview
+                                            <i class="fas fa-external-link-alt"></i> Προεπισκόπηση
                                         </a>
                                     </div>
                                 </div>
@@ -45,7 +56,7 @@
                                         <input type="hidden" name="youtube_id" value="{{ video.id.videoId }}">
                                         <input type="hidden" name="title" value="{{ video.snippet.title }}">
                                         <button type="submit" class="add-video-btn">
-                                            <i class="fas fa-plus"></i> Add to Playlist
+                                            <i class="fas fa-plus"></i> Προσθήκη στη Λίστα
                                         </button>
                                     </form>
                                 </div>
@@ -53,14 +64,15 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <div class="alert alert-info">No videos found for "{{ query }}". Try a different search term.</div>
+                    <div class="alert alert-info">Δε βρέθηκαν βίντεο για "{{ query }}". Δοκιμάστε άλλους όρους αναζήτησης.</div>
                 {% endif %}
             </div>
         {% else %}
             <div class="search-help">
-                <p>Enter a search term above to find YouTube videos to add to your playlist.</p>
-                <p>You can search by title, channel, or keywords.</p>
+                <p>Εισάγετε όρους αναζήτησης παραπάνω για να βρείτε βίντεο από το YouTube.</p>
+                <p>Μπορείτε να αναζητήσετε με βάση τον τίτλο, το κανάλι ή λέξεις-κλειδιά.</p>
             </div>
+        {% endif %}
         {% endif %}
     </div>
 </section>
@@ -184,13 +196,38 @@
         font-size: 0.75rem;
     }
     
-    .search-help {
+    .search-help, .youtube-auth-message {
         background-color: var(--card-bg);
         padding: 2rem;
         border-radius: var(--border-radius);
         text-align: center;
         max-width: 600px;
         margin: 2rem auto;
+    }
+    
+    .youtube-auth-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .youtube-auth-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+        padding: 0.75rem 1.5rem;
+        background-color: #FF0000;
+        color: white;
+        border: none;
+        border-radius: var(--border-radius);
+        text-decoration: none;
+        transition: background-color 0.3s;
+    }
+    
+    .youtube-auth-btn:hover {
+        background-color: #CC0000;
     }
     
     @media (max-width: 768px) {

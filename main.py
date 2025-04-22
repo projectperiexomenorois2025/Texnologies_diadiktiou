@@ -3,6 +3,9 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 from datetime import datetime
+from google.oauth2.credentials import Credentials
+import google_auth_oauthlib.flow
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -469,7 +472,7 @@ def edit_playlist(playlist_id):
 def add_video(playlist_id):
     # Check if user is logged in
     if 'user_id' not in session:
-        flash('Please log in to add videos')
+        flash('Παρακαλώ συνδεθείτε για να προσθέσετε βίντεο')
         return redirect(url_for('login'))
     
     # Get playlist
@@ -477,8 +480,11 @@ def add_video(playlist_id):
     
     # Check if user owns the playlist
     if playlist.user_id != session['user_id']:
-        flash('You do not have permission to edit this playlist')
+        flash('Δεν έχετε δικαίωμα επεξεργασίας αυτής της λίστας')
         return redirect(url_for('view_playlist', playlist_id=playlist_id))
+    
+    # Store the current playlist_id in session for the OAuth callback
+    session['current_playlist_id'] = playlist_id
     
     if request.method == 'POST':
         youtube_id = request.form.get('youtube_id')
@@ -499,9 +505,9 @@ def add_video(playlist_id):
                 )
                 db.session.add(new_video)
                 db.session.commit()
-                flash('Video added to playlist')
+                flash('Το βίντεο προστέθηκε στη λίστα')
             else:
-                flash('This video is already in the playlist')
+                flash('Αυτό το βίντεο υπάρχει ήδη στη λίστα')
                 
         return redirect(url_for('add_video', playlist_id=playlist_id))
     
@@ -509,75 +515,170 @@ def add_video(playlist_id):
     query = request.args.get('q', '')
     search_results = []
     
-    # Perform search if query provided
-    if query:
-        # In a real app, this would call the YouTube API
-        # For now, use our mock data
-        search_results = [
-            {
-                'id': {'videoId': 'dQw4w9WgXcQ'},
-                'snippet': {
-                    'title': 'Rick Astley - Never Gonna Give You Up (Official Music Video)',
-                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'}},
-                    'channelTitle': 'Rick Astley'
-                }
-            },
-            {
-                'id': {'videoId': 'xvFZjo5PgG0'},
-                'snippet': {
-                    'title': 'Βίντεο με μουσική',
-                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/xvFZjo5PgG0/mqdefault.jpg'}},
-                    'channelTitle': 'Μουσικό Κανάλι'
-                }
-            },
-            {
-                'id': {'videoId': 'ZZ5LpwO-An4'},
-                'snippet': {
-                    'title': 'He-Man - HEYYEYAAEYAAAEYAEYAA',
-                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/ZZ5LpwO-An4/mqdefault.jpg'}},
-                    'channelTitle': 'ProtoOfSnagem'
-                }
-            }
-        ]
+    # Check if we have YouTube credentials
+    has_youtube_auth = 'youtube_credentials' in session
+    
+    # Perform search if query provided and authenticated
+    if query and has_youtube_auth:
+        try:
+            # Import YouTube API modules
+            from youtube_api import get_youtube_client, search_videos
+            from google.oauth2.credentials import Credentials
+            
+            # Create credentials from stored session data
+            credentials = Credentials(
+                token=session['youtube_credentials']['token'],
+                refresh_token=session['youtube_credentials']['refresh_token'],
+                token_uri=session['youtube_credentials']['token_uri'],
+                client_id=session['youtube_credentials']['client_id'],
+                client_secret=session['youtube_credentials']['client_secret'],
+                scopes=session['youtube_credentials']['scopes']
+            )
+            
+            # Build YouTube client
+            youtube = get_youtube_client(credentials)
+            
+            # Search videos
+            response = search_videos(youtube, query)
+            
+            # Extract search results
+            if 'items' in response:
+                search_results = response['items']
+        except Exception as e:
+            app.logger.error(f"YouTube API Error: {str(e)}")
+            flash(f'Σφάλμα κατά την αναζήτηση: {str(e)}')
+            # If token expired, clear credentials
+            session.pop('youtube_credentials', None)
+            has_youtube_auth = False
     
     return render_template(
         'add_video.html',
         playlist=playlist,
         query=query,
-        search_results=search_results
+        search_results=search_results,
+        has_youtube_auth=has_youtube_auth,
+        auth_url=url_for('youtube_auth') if not has_youtube_auth else None
     )
+
+# YouTube OAuth routes
+@app.route('/youtube/auth')
+def youtube_auth():
+    # Check if user is logged in
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να χρησιμοποιήσετε την αναζήτηση YouTube')
+        return redirect(url_for('login'))
+    
+    # Import YouTube API module
+    from youtube_api import get_oauth_flow
+    
+    # Create flow instance
+    flow = get_oauth_flow()
+    
+    # Generate authorization URL
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true'
+    )
+    
+    # Store the state in the session for later validation
+    session['youtube_oauth_state'] = state
+    
+    # Redirect to Google authorization page
+    return redirect(authorization_url)
+
+@app.route('/youtube/callback')
+def youtube_oauth_callback():
+    # Check for authorization errors
+    if 'error' in request.args:
+        flash(f'Σφάλμα άδειας: {request.args.get("error")}')
+        return redirect(url_for('add_video', playlist_id=session.get('current_playlist_id', 0)))
+    
+    # Ensure state parameter matches to prevent CSRF
+    if 'youtube_oauth_state' not in session:
+        flash('Μη έγκυρη κατάσταση επαλήθευσης. Προσπαθήστε ξανά.')
+        return redirect(url_for('index'))
+    
+    # Import YouTube API module
+    from youtube_api import get_oauth_flow
+    
+    # Create flow instance
+    flow = get_oauth_flow()
+    
+    # Complete the OAuth flow and obtain credentials
+    flow.fetch_token(
+        authorization_response=request.url,
+        state=session['youtube_oauth_state']
+    )
+    
+    # Get credentials and store in session
+    credentials = flow.credentials
+    session['youtube_credentials'] = {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': credentials.scopes
+    }
+    
+    # Clear state
+    session.pop('youtube_oauth_state', None)
+    
+    # Redirect to the video search page
+    playlist_id = session.get('current_playlist_id', 0)
+    if playlist_id:
+        return redirect(url_for('add_video', playlist_id=playlist_id))
+    else:
+        flash('Επιτυχής σύνδεση με το YouTube API')
+        return redirect(url_for('playlists'))
 
 @app.route('/api/youtube/search')
 def search_youtube():
     query = request.args.get('q', '')
-    # This would normally call the YouTube API
-    # For now, return a mock response for testing
+    
     if not query:
         return jsonify({'items': []})
     
-    # Mock YouTube search results
-    results = {
-        'items': [
-            {
-                'id': {'videoId': 'dQw4w9WgXcQ'},
-                'snippet': {
-                    'title': 'Test Video 1',
-                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'}},
-                    'channelTitle': 'Test Channel'
-                }
-            },
-            {
-                'id': {'videoId': 'xvFZjo5PgG0'},
-                'snippet': {
-                    'title': 'Test Video 2',
-                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/xvFZjo5PgG0/mqdefault.jpg'}},
-                    'channelTitle': 'Another Channel'
-                }
-            }
-        ]
-    }
+    # Check if we have YouTube credentials
+    if 'youtube_credentials' not in session:
+        return jsonify({
+            'error': 'authentication_required',
+            'message': 'Απαιτείται σύνδεση με το λογαριασμό YouTube',
+            'auth_url': url_for('youtube_auth')
+        })
     
-    return jsonify(results)
+    try:
+        # Import YouTube API modules
+        from youtube_api import get_youtube_client, search_videos
+        from google.oauth2.credentials import Credentials
+        
+        # Create credentials from stored session data
+        credentials = Credentials(
+            token=session['youtube_credentials']['token'],
+            refresh_token=session['youtube_credentials']['refresh_token'],
+            token_uri=session['youtube_credentials']['token_uri'],
+            client_id=session['youtube_credentials']['client_id'],
+            client_secret=session['youtube_credentials']['client_secret'],
+            scopes=session['youtube_credentials']['scopes']
+        )
+        
+        # Build YouTube client
+        youtube = get_youtube_client(credentials)
+        
+        # Search videos
+        results = search_videos(youtube, query)
+        
+        return jsonify(results)
+        
+    except Exception as e:
+        app.logger.error(f"YouTube API Error: {str(e)}")
+        # If token expired, clear credentials and require re-authentication
+        session.pop('youtube_credentials', None)
+        return jsonify({
+            'error': 'api_error',
+            'message': f'Σφάλμα κατά την αναζήτηση: {str(e)}',
+            'auth_url': url_for('youtube_auth')
+        })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
