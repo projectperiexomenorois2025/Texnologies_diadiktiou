@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+
+{% block title %}Public Playlists - Streamify{% endblock %}
+
+{% block content %}
+<section class="playlists-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Public Playlists</h1>
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Create New Playlist</a>
+            {% endif %}
+        </div>
+        
+        {% if playlists.items %}
+            <div class="grid">
+                {% for playlist in playlists.items %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">{{ playlist.title }}</h3>
+                            <p class="card-meta">
+                                By <a href="{{ url_for('profile', user_id=playlist.user_id) }}">{{ playlist.creator.username }}</a> •
+                                Created: {{ playlist.created_at.strftime('%b %d, %Y') }}
+                            </p>
+                            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">View Playlist</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            {% if playlists.pages > 1 %}
+                <div class="pagination">
+                    {% if playlists.has_prev %}
+                        <a href="{{ url_for('playlists', page=playlists.prev_num) }}" class="pagination-link">&laquo; Previous</a>
+                    {% endif %}
+                    
+                    {% for page_num in playlists.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == playlists.page %}
+                                <a href="#" class="pagination-link pagination-current">{{ page_num }}</a>
+                            {% else %}
+                                <a href="{{ url_for('playlists', page=page_num) }}" class="pagination-link">{{ page_num }}</a>
+                            {% endif %}
+                        {% else %}
+                            <span class="pagination-ellipsis">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if playlists.has_next %}
+                        <a href="{{ url_for('playlists', page=playlists.next_num) }}" class="pagination-link">Next &raquo;</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">No playlists available yet.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

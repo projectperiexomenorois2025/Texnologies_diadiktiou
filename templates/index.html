@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Welcome to Streamify</h1>
+            <p class="hero-subtitle">Create, share and enjoy YouTube content playlists</p>
+            <div class="hero-buttons">
+                {% if not session.get('user_id') %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up Now</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary">Login</a>
+                {% else %}
+                    <a href="{{ url_for('playlists') }}" class="btn btn-primary">Browse Playlists</a>
+                    <a href="/create_playlist" class="btn btn-secondary">Create a Playlist</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <h2 class="section-title">Why Streamify?</h2>
+        
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">
+                    <i class="fas fa-list"></i>
+                </div>
+                <h3>Create Custom Playlists</h3>
+                <p>Organize your favorite YouTube videos into playlists for easy access and sharing.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3>Share With Friends</h3>
+                <p>Share your playlists with friends or keep them private - you decide.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3>Follow Other Users</h3>
+                <p>Follow your friends to see what they're watching and discover new content.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">
+                    <i class="fas fa-download"></i>
+                </div>
+                <h3>Export Your Playlists</h3>
+                <p>Export your playlists for sharing or backup in convenient formats.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to get started?</h2>
+            <p>Join thousands of users who are organizing and sharing their favorite YouTube content with Streamify.</p>
+            {% if not session.get('user_id') %}
+                <a href="{{ url_for('register') }}" class="btn btn-primary">Sign Up for Free</a>
+            {% else %}
+                <a href="/create_playlist" class="btn btn-primary">Create Your First Playlist</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section class="faq-section">
+    <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        
+        <div class="accordion">
+            <div class="accordion-item">
+                <div class="accordion-header">Is Streamify free to use?</div>
+                <div class="accordion-content">
+                    <p>Yes, Streamify is completely free to use. Create accounts, make playlists, and enjoy all features at no cost.</p>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <div class="accordion-header">Can I make private playlists?</div>
+                <div class="accordion-content">
+                    <p>Absolutely! When creating or editing a playlist, you can choose to make it private so that only you can see it.</p>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <div class="accordion-header">How do I add videos to my playlists?</div>
+                <div class="accordion-content">
+                    <p>You can search for YouTube videos directly within Streamify and add them to your playlists with just a click.</p>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <div class="accordion-header">Can I export my playlists?</div>
+                <div class="accordion-content">
+                    <p>Yes, we provide export options for your playlists in various formats for easy backup or sharing.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle accordion functionality
+    const accordionItems = document.querySelectorAll('.accordion-item');
+    
+    accordionItems.forEach(item => {
+        const header = item.querySelector('.accordion-header');
+        
+        header.addEventListener('click', function() {
+            item.classList.toggle('active');
+        });
+    });
+});
+</script>
+{% endblock %}

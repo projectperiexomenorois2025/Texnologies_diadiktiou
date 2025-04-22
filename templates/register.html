@@ -1,0 +1,128 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - Streamify{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="container">
+        <div class="form-container">
+            <h1 class="form-title">Create an Account</h1>
+            
+            <form id="register-form" method="POST" action="{{ url_for('register') }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="first_name">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="last_name">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
+                
+                <button type="submit" class="form-submit">Register</button>
+            </form>
+            
+            <div class="form-footer">
+                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const registerForm = document.getElementById('register-form');
+    
+    registerForm.addEventListener('submit', function(event) {
+        let isValid = true;
+        const username = document.getElementById('username').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        // Clear previous errors
+        document.querySelectorAll('.error').forEach(el => el.remove());
+        
+        if (username === '') {
+            showError(registerForm, 'username', 'Username is required');
+            isValid = false;
+        }
+        
+        if (email === '') {
+            showError(registerForm, 'email', 'Email is required');
+            isValid = false;
+        } else if (!isValidEmail(email)) {
+            showError(registerForm, 'email', 'Please enter a valid email address');
+            isValid = false;
+        }
+        
+        if (firstName === '') {
+            showError(registerForm, 'first_name', 'First name is required');
+            isValid = false;
+        }
+        
+        if (lastName === '') {
+            showError(registerForm, 'last_name', 'Last name is required');
+            isValid = false;
+        }
+        
+        if (password === '') {
+            showError(registerForm, 'password', 'Password is required');
+            isValid = false;
+        } else if (password.length < 6) {
+            showError(registerForm, 'password', 'Password must be at least 6 characters');
+            isValid = false;
+        }
+        
+        if (confirmPassword === '') {
+            showError(registerForm, 'confirm_password', 'Please confirm your password');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            showError(registerForm, 'confirm_password', 'Passwords do not match');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    function showError(form, fieldName, message) {
+        const field = form.querySelector(`#${fieldName}`);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+    
+    function isValidEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+});
+</script>
+{% endblock %}

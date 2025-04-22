@@ -1,0 +1,141 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ user.username }}'s Profile - Streamify{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="container">
+        <div class="profile-container">
+            <div class="profile-info">
+                <h1 class="profile-username">{{ user.username }}</h1>
+                
+                <div class="profile-details">
+                    <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                    {% if is_current_user %}
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                    {% endif %}
+                    <p><strong>Member since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
+                    <p><strong>Playlists:</strong> {{ playlists|length }}</p>
+                    <p><strong>Following:</strong> {{ following|length }}</p>
+                    <p><strong>Followers:</strong> {{ followers|length }}</p>
+                </div>
+                
+                {% if session.get('user_id') and not is_current_user %}
+                    <div class="profile-actions">
+                        <form method="POST" action="{{ url_for('follow_user', user_id=user.id) }}">
+                            <input type="hidden" name="action" value="{{ 'unfollow' if is_following else 'follow' }}">
+                            <button type="submit" id="follow-btn" class="btn {{ 'btn-secondary' if is_following else 'btn-primary' }}">
+                                {{ 'Unfollow' if is_following else 'Follow' }}
+                            </button>
+                        </form>
+                    </div>
+                {% elif is_current_user %}
+                    <div class="profile-actions">
+                        <a href="{{ url_for('edit_profile') }}" class="btn">Edit Profile</a>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="profile-content">
+                <h2>Playlists</h2>
+                
+                {% if playlists %}
+                    <div class="grid">
+                        {% for playlist in playlists %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title">
+                                        {{ playlist.title }}
+                                        {% if not playlist.is_public %}
+                                            <span class="private-badge"><i class="fas fa-lock"></i></span>
+                                        {% endif %}
+                                    </h3>
+                                    <p class="card-meta">Created: {{ playlist.created_at.strftime('%b %d, %Y') }}</p>
+                                    <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">View Playlist</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>No playlists available.</p>
+                {% endif %}
+                
+                {% if is_current_user %}
+                    <div class="create-playlist">
+                        <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Create New Playlist</a>
+                    </div>
+                {% endif %}
+                
+                {% if following %}
+                    <h2>Following</h2>
+                    <div class="grid">
+                        {% for follow in following %}
+                            <div class="card user-card">
+                                <div class="card-body">
+                                    <h3 class="card-title">{{ follow.username }}</h3>
+                                    <p class="card-meta">{{ follow.first_name }} {{ follow.last_name }}</p>
+                                    <a href="{{ url_for('profile', user_id=follow.id) }}" class="btn">View Profile</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .profile-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+    }
+    
+    .profile-info {
+        background-color: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+    
+    .profile-username {
+        margin-bottom: 1rem;
+        color: var(--text-color);
+    }
+    
+    .profile-details {
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-details p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-actions {
+        margin-top: 1.5rem;
+    }
+    
+    .private-badge {
+        display: inline-flex;
+        font-size: 14px;
+        margin-left: 8px;
+        color: var(--text-color);
+        opacity: 0.7;
+    }
+    
+    .create-playlist {
+        margin-top: 1.5rem;
+    }
+    
+    .user-card {
+        text-align: center;
+    }
+    
+    @media (max-width: 992px) {
+        .profile-container {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

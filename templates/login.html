@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}Login - Streamify{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="container">
+        <div class="form-container">
+            <h1 class="form-title">Login to Your Account</h1>
+            
+            <form id="login-form" method="POST" action="{{ url_for('login') }}">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="form-submit">Login</button>
+            </form>
+            
+            <div class="form-footer">
+                <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    
+    loginForm.addEventListener('submit', function(event) {
+        let isValid = true;
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        // Clear previous errors
+        document.querySelectorAll('.error').forEach(el => el.remove());
+        
+        if (username === '') {
+            showError(loginForm, 'username', 'Username is required');
+            isValid = false;
+        }
+        
+        if (password === '') {
+            showError(loginForm, 'password', 'Password is required');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    function showError(form, fieldName, message) {
+        const field = form.querySelector(`#${fieldName}`);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+});
+</script>
+{% endblock %}

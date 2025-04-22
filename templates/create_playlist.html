@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}Create Playlist - Streamify{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="container">
+        <div class="form-container">
+            <h1 class="form-title">Create New Playlist</h1>
+            
+            <form id="playlist-form" method="POST" action="{{ url_for('create_playlist') }}">
+                <div class="form-group">
+                    <label for="title">Playlist Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="is_public" checked>
+                        Make this playlist public
+                    </label>
+                    <small class="form-text">Public playlists can be viewed by anyone. Private playlists are only visible to you and users who follow you.</small>
+                </div>
+                
+                <button type="submit" class="form-submit">Create Playlist</button>
+            </form>
+            
+            <div class="form-footer">
+                <p>Want to see your existing playlists? <a href="{{ url_for('profile') }}">Go to your profile</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const playlistForm = document.getElementById('playlist-form');
+    
+    playlistForm.addEventListener('submit', function(event) {
+        let isValid = true;
+        const title = document.getElementById('title').value.trim();
+        
+        // Clear previous errors
+        document.querySelectorAll('.error').forEach(el => el.remove());
+        
+        if (title === '') {
+            showError(playlistForm, 'title', 'Playlist title is required');
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+    
+    function showError(form, fieldName, message) {
+        const field = form.querySelector(`#${fieldName}`);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.textContent = message;
+        field.parentNode.appendChild(errorDiv);
+    }
+});
+</script>
+{% endblock %}
