@@ -1,10 +1,9 @@
-
 {% extends "layout.html" %}
 
 {% block content %}
 <div class="container">
     <h1>Αναζήτηση Λιστών</h1>
-    
+
     <div class="search-form">
         <form method="GET" action="{{ url_for('search') }}">
             <div class="form-group">
@@ -12,7 +11,7 @@
                 <input type="text" class="form-control" id="text_search" name="text_search" 
                        placeholder="Αναζήτηση σε τίτλους λιστών και περιεχόμενα">
             </div>
-            
+
             <div class="form-row">
                 <div class="form-group col-md-6">
                     <label for="date_from">Από Ημερομηνία</label>
@@ -23,13 +22,13 @@
                     <input type="date" class="form-control" id="date_to" name="date_to">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="user_search">Αναζήτηση Χρήστη</label>
                 <input type="text" class="form-control" id="user_search" name="user_search" 
                        placeholder="Όνομα, επώνυμο, username ή email χρήστη">
             </div>
-            
+
             <div class="form-group">
                 <label for="per_page">Αποτελέσματα ανά σελίδα</label>
                 <select class="form-control" id="per_page" name="per_page">
@@ -37,7 +36,7 @@
                     <option value="25">25</option>
                 </select>
             </div>
-            
+
             <button type="submit" class="btn btn-primary">Αναζήτηση</button>
         </form>
     </div>
@@ -56,7 +55,7 @@
                 </div>
                 {% endfor %}
             </div>
-            
+
             {% if results.pages > 1 %}
             <div class="pagination">
                 {% for page in range(1, results.pages + 1) %}
@@ -68,33 +67,9 @@
             </div>
             {% endif %}
         {% else %}
-        <div class="playlists-grid">
-            {% for playlist in results.playlists %}
-            <div class="playlist-card">
-                <h3>{{ playlist.title }}</h3>
-                <p>Από: {{ playlist.username }}</p>
-                <p>Ημερομηνία: {{ playlist.created_at.strftime('%d/%m/%Y') }}</p>
-                <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn btn-primary">Προβολή</a>
-            </div>
-            {% endfor %}
-        </div>
-        
-        {% if results.total_pages > 1 %}
-        <div class="pagination">
-            {% for page in range(1, results.total_pages + 1) %}
-            <a href="{{ url_for('search', page=page, **request.args) }}" 
-               class="page-link {% if page == results.current_page %}active{% endif %}">
-                {{ page }}
-            </a>
-            {% endfor %}
-        </div>
-        {% endif %}
-        
-        {% else %}
-        <p>Δεν βρέθηκαν αποτελέσματα.</p>
+            <p>Δεν βρέθηκαν αποτελέσματα.</p>
         {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <style>
