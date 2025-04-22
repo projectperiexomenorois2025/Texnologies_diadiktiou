@@ -110,9 +110,18 @@ def search():
 
     # Order by latest first and paginate
     query_obj = query_obj.order_by(Playlist.created_at.desc())
-    results = query_obj.paginate(page=page, per_page=per_page)
+    results = query_obj.paginate(page=page, per_page=per_page, error_out=False)
 
-    return render_template('search.html', results=results)
+    # Get total number of results
+    total_results = query_obj.count()
+
+    return render_template('search.html', 
+                         results=results,
+                         total_results=total_results,
+                         query=query,
+                         date_from=date_from,
+                         date_to=date_to,
+                         user_search=user_search)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
