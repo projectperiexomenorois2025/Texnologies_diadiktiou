@@ -1,16 +1,16 @@
 {% extends "layout.html" %}
 
-{% block title %}Register - Streamify{% endblock %}
+{% block title %}Εγγραφή - YouTube Playlist Manager{% endblock %}
 
 {% block content %}
 <section class="form-section">
     <div class="container">
         <div class="form-container">
-            <h1 class="form-title">Create an Account</h1>
+            <h1 class="form-title">Δημιουργία Λογαριασμού</h1>
             
             <form id="register-form" method="POST" action="{{ url_for('register') }}">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username">Όνομα Χρήστη</label>
                     <input type="text" class="form-control" id="username" name="username" required>
                 </div>
                 
@@ -20,30 +20,30 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="first_name">First Name</label>
+                    <label for="first_name">Όνομα</label>
                     <input type="text" class="form-control" id="first_name" name="first_name" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="last_name">Last Name</label>
+                    <label for="last_name">Επώνυμο</label>
                     <input type="text" class="form-control" id="last_name" name="last_name" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">Κωδικός</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirm_password">Confirm Password</label>
+                    <label for="confirm_password">Επιβεβαίωση Κωδικού</label>
                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                 </div>
                 
-                <button type="submit" class="form-submit">Register</button>
+                <button type="submit" class="form-submit">Εγγραφή</button>
             </form>
             
             <div class="form-footer">
-                <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+                <p>Έχετε ήδη λογαριασμό; <a href="{{ url_for('login') }}">Συνδεθείτε εδώ</a></p>
             </div>
         </div>
     </div>
@@ -68,41 +68,41 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.error').forEach(el => el.remove());
         
         if (username === '') {
-            showError(registerForm, 'username', 'Username is required');
+            showError(registerForm, 'username', 'Το όνομα χρήστη είναι υποχρεωτικό');
             isValid = false;
         }
         
         if (email === '') {
-            showError(registerForm, 'email', 'Email is required');
+            showError(registerForm, 'email', 'Το email είναι υποχρεωτικό');
             isValid = false;
         } else if (!isValidEmail(email)) {
-            showError(registerForm, 'email', 'Please enter a valid email address');
+            showError(registerForm, 'email', 'Παρακαλώ εισάγετε ένα έγκυρο email');
             isValid = false;
         }
         
         if (firstName === '') {
-            showError(registerForm, 'first_name', 'First name is required');
+            showError(registerForm, 'first_name', 'Το όνομα είναι υποχρεωτικό');
             isValid = false;
         }
         
         if (lastName === '') {
-            showError(registerForm, 'last_name', 'Last name is required');
+            showError(registerForm, 'last_name', 'Το επώνυμο είναι υποχρεωτικό');
             isValid = false;
         }
         
         if (password === '') {
-            showError(registerForm, 'password', 'Password is required');
+            showError(registerForm, 'password', 'Ο κωδικός είναι υποχρεωτικός');
             isValid = false;
         } else if (password.length < 6) {
-            showError(registerForm, 'password', 'Password must be at least 6 characters');
+            showError(registerForm, 'password', 'Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες');
             isValid = false;
         }
         
         if (confirmPassword === '') {
-            showError(registerForm, 'confirm_password', 'Please confirm your password');
+            showError(registerForm, 'confirm_password', 'Παρακαλώ επιβεβαιώστε τον κωδικό σας');
             isValid = false;
         } else if (password !== confirmPassword) {
-            showError(registerForm, 'confirm_password', 'Passwords do not match');
+            showError(registerForm, 'confirm_password', 'Οι κωδικοί δεν ταιριάζουν');
             isValid = false;
         }
         

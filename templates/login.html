@@ -1,29 +1,29 @@
 {% extends "layout.html" %}
 
-{% block title %}Login - Streamify{% endblock %}
+{% block title %}Σύνδεση - YouTube Playlist Manager{% endblock %}
 
 {% block content %}
 <section class="form-section">
     <div class="container">
         <div class="form-container">
-            <h1 class="form-title">Login to Your Account</h1>
+            <h1 class="form-title">Σύνδεση στο Λογαριασμό σας</h1>
             
             <form id="login-form" method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
-                    <label for="username">Username</label>
+                    <label for="username">Όνομα Χρήστη</label>
                     <input type="text" class="form-control" id="username" name="username" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="password">Password</label>
+                    <label for="password">Κωδικός</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
                 
-                <button type="submit" class="form-submit">Login</button>
+                <button type="submit" class="form-submit">Σύνδεση</button>
             </form>
             
             <div class="form-footer">
-                <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+                <p>Δεν έχετε λογαριασμό; <a href="{{ url_for('register') }}">Εγγραφείτε εδώ</a></p>
             </div>
         </div>
     </div>
@@ -44,12 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.error').forEach(el => el.remove());
         
         if (username === '') {
-            showError(loginForm, 'username', 'Username is required');
+            showError(loginForm, 'username', 'Το όνομα χρήστη είναι υποχρεωτικό');
             isValid = false;
         }
         
         if (password === '') {
-            showError(loginForm, 'password', 'Password is required');
+            showError(loginForm, 'password', 'Ο κωδικός είναι υποχρεωτικός');
             isValid = false;
         }
         
