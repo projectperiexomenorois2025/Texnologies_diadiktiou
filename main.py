@@ -403,9 +403,33 @@ def add_video(playlist_id):
     # Perform search if query provided
     if query:
         # In a real app, this would call the YouTube API
-        # For now, use our mock API endpoint
-        search_response = search_youtube()
-        search_results = search_response.json['items']
+        # For now, use our mock data
+        search_results = [
+            {
+                'id': {'videoId': 'dQw4w9WgXcQ'},
+                'snippet': {
+                    'title': 'Rick Astley - Never Gonna Give You Up (Official Music Video)',
+                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'}},
+                    'channelTitle': 'Rick Astley'
+                }
+            },
+            {
+                'id': {'videoId': 'xvFZjo5PgG0'},
+                'snippet': {
+                    'title': 'Βίντεο με μουσική',
+                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/xvFZjo5PgG0/mqdefault.jpg'}},
+                    'channelTitle': 'Μουσικό Κανάλι'
+                }
+            },
+            {
+                'id': {'videoId': 'ZZ5LpwO-An4'},
+                'snippet': {
+                    'title': 'He-Man - HEYYEYAAEYAAAEYAEYAA',
+                    'thumbnails': {'medium': {'url': 'https://img.youtube.com/vi/ZZ5LpwO-An4/mqdefault.jpg'}},
+                    'channelTitle': 'ProtoOfSnagem'
+                }
+            }
+        ]
     
     return render_template(
         'add_video.html',

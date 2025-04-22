@@ -1,0 +1,162 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Playlist - {{ playlist.title }} - Streamify{% endblock %}
+
+{% block content %}
+<section class="edit-playlist-section">
+    <div class="container">
+        <div class="section-header">
+            <h1>Edit Playlist: {{ playlist.title }}</h1>
+            <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Back to Playlist</a>
+        </div>
+        
+        <div class="edit-playlist-container">
+            <div class="playlist-details">
+                <h2>Playlist Details</h2>
+                <form method="POST" action="{{ url_for('edit_playlist', playlist_id=playlist.id) }}" class="form-container">
+                    <input type="hidden" name="action" value="update_details">
+                    
+                    <div class="form-group">
+                        <label for="title">Playlist Title</label>
+                        <input type="text" id="title" name="title" class="form-control" value="{{ playlist.title }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_public" {% if playlist.is_public %}checked{% endif %}>
+                            Make this playlist public
+                        </label>
+                        <small class="form-text">Public playlists can be viewed by anyone. Private playlists are only visible to you and users who follow you.</small>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Update Details</button>
+                </form>
+            </div>
+            
+            <div class="playlist-videos">
+                <div class="videos-header">
+                    <h2>Videos in Playlist</h2>
+                    <a href="{{ url_for('add_video', playlist_id=playlist.id) }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Videos
+                    </a>
+                </div>
+                
+                {% if videos %}
+                    <div class="video-list">
+                        {% for video in videos %}
+                            <div class="playlist-video">
+                                <div class="video-thumbnail">
+                                    <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/mqdefault.jpg" alt="{{ video.title }}">
+                                </div>
+                                <div class="video-info">
+                                    <h3 class="video-title">{{ video.title }}</h3>
+                                    <p class="video-added">Added: {{ video.added_at.strftime('%b %d, %Y') }}</p>
+                                </div>
+                                <div class="video-actions">
+                                    <form method="POST" action="{{ url_for('edit_playlist', playlist_id=playlist.id) }}">
+                                        <input type="hidden" name="action" value="remove_video">
+                                        <input type="hidden" name="video_id" value="{{ video.id }}">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this video from your playlist?')">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">This playlist has no videos yet. Click "Add Videos" to add some.</div>
+                {% endif %}
+            </div>
+            
+            <div class="delete-playlist">
+                <h2>Delete Playlist</h2>
+                <p>Once you delete a playlist, there is no going back. Please be certain.</p>
+                <form method="POST" action="{{ url_for('edit_playlist', playlist_id=playlist.id) }}">
+                    <input type="hidden" name="action" value="delete_playlist">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this entire playlist? This action cannot be undone.')">
+                        <i class="fas fa-trash"></i> Delete Playlist
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .edit-playlist-container {
+        display: grid;
+        gap: 2rem;
+    }
+    
+    .playlist-details, .playlist-videos, .delete-playlist {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+    
+    .delete-playlist {
+        border-left: 4px solid var(--danger-color);
+    }
+    
+    .videos-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .video-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .playlist-video {
+        display: flex;
+        gap: 1rem;
+        background-color: var(--bg-color);
+        border-radius: var(--border-radius);
+        padding: 1rem;
+    }
+    
+    .video-thumbnail {
+        flex: 0 0 120px;
+    }
+    
+    .video-thumbnail img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    
+    .video-info {
+        flex: 1;
+    }
+    
+    .video-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .video-added {
+        font-size: 0.875rem;
+        color: var(--secondary-color);
+    }
+    
+    .form-container {
+        max-width: 100%;
+    }
+    
+    @media (max-width: 768px) {
+        .playlist-video {
+            flex-direction: column;
+        }
+        
+        .video-thumbnail {
+            flex: 0 0 auto;
+        }
+    }
+</style>
+{% endblock %}
