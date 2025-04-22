@@ -59,6 +59,10 @@ def about():
 def help():
     return render_template('help.html')
 
+@app.route('/search')
+def search():
+    return render_template('search.html')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
