@@ -24,6 +24,7 @@
                         <li><a href="{{ url_for('playlists') }}">Λίστες</a></li>
                         <li><a href="{{ url_for('about') }}">Σχετικά</a></li>
                         <li><a href="{{ url_for('help') }}">Βοήθεια</a></li>
+                        <li><a href="{{ url_for('search') }}">Αναζήτηση</a></li>
                         {% if session.get('user_id') %}
                             <li><a href="{{ url_for('profile') }}">Προφίλ</a></li>
                             <li><a href="/following">Ακολουθώ</a></li>
