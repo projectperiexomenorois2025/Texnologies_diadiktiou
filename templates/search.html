@@ -3,16 +3,126 @@
 
 {% block content %}
 <div class="container">
-    <h1>Αναζήτηση</h1>
-    <div class="search-container">
-        <form method="GET" action="{{ url_for('search') }}" class="search-form">
-            <div class="search-input">
-                <input type="text" name="q" placeholder="Αναζήτηση..." value="{{ request.args.get('q', '') }}">
-                <button type="submit" class="search-btn">
-                    <i class="fas fa-search"></i> Αναζήτηση
-                </button>
+    <h1>Αναζήτηση Λιστών</h1>
+    
+    <div class="search-form">
+        <form method="GET" action="{{ url_for('search') }}">
+            <div class="form-group">
+                <label for="text_search">Αναζήτηση Κειμένου</label>
+                <input type="text" class="form-control" id="text_search" name="text_search" 
+                       placeholder="Αναζήτηση σε τίτλους λιστών και περιεχόμενα">
             </div>
+            
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="date_from">Από Ημερομηνία</label>
+                    <input type="date" class="form-control" id="date_from" name="date_from">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="date_to">Έως Ημερομηνία</label>
+                    <input type="date" class="form-control" id="date_to" name="date_to">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="user_search">Αναζήτηση Χρήστη</label>
+                <input type="text" class="form-control" id="user_search" name="user_search" 
+                       placeholder="Όνομα, επώνυμο, username ή email χρήστη">
+            </div>
+            
+            <div class="form-group">
+                <label for="per_page">Αποτελέσματα ανά σελίδα</label>
+                <select class="form-control" id="per_page" name="per_page">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Αναζήτηση</button>
         </form>
     </div>
+
+    {% if results %}
+    <div class="search-results">
+        <h2>Αποτελέσματα Αναζήτησης</h2>
+        {% if results.playlists %}
+        <div class="playlists-grid">
+            {% for playlist in results.playlists %}
+            <div class="playlist-card">
+                <h3>{{ playlist.title }}</h3>
+                <p>Από: {{ playlist.username }}</p>
+                <p>Ημερομηνία: {{ playlist.created_at.strftime('%d/%m/%Y') }}</p>
+                <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn btn-primary">Προβολή</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if results.total_pages > 1 %}
+        <div class="pagination">
+            {% for page in range(1, results.total_pages + 1) %}
+            <a href="{{ url_for('search', page=page, **request.args) }}" 
+               class="page-link {% if page == results.current_page %}active{% endif %}">
+                {{ page }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <p>Δεν βρέθηκαν αποτελέσματα.</p>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
+
+<style>
+.search-form {
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.playlists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.playlist-card {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.page-link {
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.page-link.active {
+    background: var(--primary-color);
+    color: white;
+}
+</style>
 {% endblock %}
