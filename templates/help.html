@@ -198,31 +198,41 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const accordionHeaders = document.querySelectorAll('.accordion-header');
+    const accordionItems = document.querySelectorAll('.accordion-item');
     
     // Add click event listener to each accordion header
     accordionHeaders.forEach(header => {
         header.addEventListener('click', function() {
-            // Toggle active class
-            this.parentElement.classList.toggle('active');
+            const clickedItem = this.parentElement;
+            const isActive = clickedItem.classList.contains('active');
             
-            // Toggle icon rotation
-            const icon = this.querySelector('.accordion-icon i');
-            if (this.parentElement.classList.contains('active')) {
+            // Close all accordion items first
+            accordionItems.forEach(item => {
+                // Reset all items
+                item.classList.remove('active');
+                item.querySelector('.accordion-content').style.maxHeight = '0';
+                
+                // Reset all icons
+                const itemIcon = item.querySelector('.accordion-icon i');
+                itemIcon.classList.remove('fa-chevron-up');
+                itemIcon.classList.add('fa-chevron-down');
+            });
+            
+            // If the clicked item wasn't already active, open it
+            if (!isActive) {
+                // Toggle active class
+                clickedItem.classList.add('active');
+                
+                // Toggle icon rotation
+                const icon = this.querySelector('.accordion-icon i');
                 icon.classList.remove('fa-chevron-down');
                 icon.classList.add('fa-chevron-up');
-            } else {
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            }
-            
-            // Get the content element
-            const content = this.nextElementSibling;
-            
-            // Toggle content visibility
-            if (this.parentElement.classList.contains('active')) {
+                
+                // Get the content element
+                const content = this.nextElementSibling;
+                
+                // Set content visibility
                 content.style.maxHeight = content.scrollHeight + 'px';
-            } else {
-                content.style.maxHeight = '0';
             }
         });
     });
