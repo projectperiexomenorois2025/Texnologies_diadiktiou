@@ -3,257 +3,433 @@
 {% block title %}{{ playlist.title }} - Streamify{% endblock %}
 
 {% block content %}
-<section class="playlist-view-section">
-    <div class="container">
-        <div class="playlist-header">
-            <div>
-                <h1 class="playlist-title">{{ playlist.title }}</h1>
-                <p class="playlist-creator">
-                    Created by <a href="{{ url_for('profile', user_id=playlist.user_id) }}">{{ playlist.creator.username }}</a>
-                    {% if not playlist.is_public %}
-                        <span class="private-badge"><i class="fas fa-lock"></i> Private</span>
-                    {% endif %}
-                </p>
+<div class="playlist-view-container">
+    <div class="playlist-header">
+        <div class="playlist-info">
+            <h1>{{ playlist.title }}</h1>
+            <div class="playlist-meta">
+                <span>Created by <a href="{{ url_for('profile', user_id=playlist.user_id) }}">{{ playlist.creator.username }}</a></span>
+                <span>{{ playlist.videos.count() }} videos</span>
+                <span>{{ playlist.is_public and 'Public' or 'Private' }}</span>
             </div>
-            
-            {% if can_edit %}
-                <div class="playlist-actions">
-                    <a href="{{ url_for('edit_playlist', playlist_id=playlist.id) }}" class="btn">Edit Playlist</a>
+        </div>
+        
+        {% if can_edit %}
+        <div class="playlist-actions">
+            <a href="{{ url_for('edit_playlist', playlist_id=playlist.id) }}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit Playlist
+            </a>
+            <a href="{{ url_for('add_video', playlist_id=playlist.id) }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add Videos
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="playlist-content">
+        <div class="video-player-container">
+            {% if current_video %}
+                <div class="video-player" id="player"></div>
+                <div class="current-video-info">
+                    <h2>{{ current_video.title }}</h2>
+                </div>
+                <script>
+                    // YouTube Player API code
+                    let player;
+                    let currentVideoId = '{{ current_video.youtube_id }}';
+                    let videos = [
+                        {% for video in videos %}
+                            {
+                                id: '{{ video.youtube_id }}',
+                                title: '{{ video.title|replace("'", "\\'") }}'
+                            }{% if not loop.last %},{% endif %}
+                        {% endfor %}
+                    ];
+                    let currentVideoIndex = videos.findIndex(v => v.id === currentVideoId);
+                    
+                    // Load the YouTube IFrame Player API code asynchronously
+                    let tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    let firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                    
+                    // Create an <iframe> (and YouTube player) after the API code downloads
+                    function onYouTubeIframeAPIReady() {
+                        player = new YT.Player('player', {
+                            height: '390',
+                            width: '100%',
+                            videoId: currentVideoId,
+                            playerVars: {
+                                'playsinline': 1,
+                                'autoplay': 1,
+                                'rel': 0
+                            },
+                            events: {
+                                'onReady': onPlayerReady,
+                                'onStateChange': onPlayerStateChange,
+                                'onError': onPlayerError
+                            }
+                        });
+                        
+                        console.log("Player ready");
+                    }
+                    
+                    // The API will call this function when the video player is ready
+                    function onPlayerReady(event) {
+                        event.target.playVideo();
+                    }
+                    
+                    // The API calls this function when the player's state changes
+                    function onPlayerStateChange(event) {
+                        if (event.data == YT.PlayerState.ENDED) {
+                            playNextVideo();
+                        }
+                    }
+                    
+                    function onPlayerError(event) {
+                        console.log("Player error", event);
+                        // Skip to next video on error
+                        playNextVideo();
+                    }
+                    
+                    function playNextVideo() {
+                        if (currentVideoIndex < videos.length - 1) {
+                            currentVideoIndex++;
+                            let nextVideo = videos[currentVideoIndex];
+                            player.loadVideoById(nextVideo.id);
+                            document.querySelector('.current-video-info h2').textContent = nextVideo.title;
+                            
+                            // Update URL without reloading the page
+                            let newUrl = window.location.pathname + '?video=' + nextVideo.id;
+                            history.pushState(null, '', newUrl);
+                            
+                            // Update active class in playlist
+                            updateActiveVideo(nextVideo.id);
+                        }
+                    }
+                    
+                    function playPrevVideo() {
+                        if (currentVideoIndex > 0) {
+                            currentVideoIndex--;
+                            let prevVideo = videos[currentVideoIndex];
+                            player.loadVideoById(prevVideo.id);
+                            document.querySelector('.current-video-info h2').textContent = prevVideo.title;
+                            
+                            // Update URL without reloading the page
+                            let newUrl = window.location.pathname + '?video=' + prevVideo.id;
+                            history.pushState(null, '', newUrl);
+                            
+                            // Update active class in playlist
+                            updateActiveVideo(prevVideo.id);
+                        }
+                    }
+                    
+                    function playVideo(videoId, videoTitle, index) {
+                        player.loadVideoById(videoId);
+                        document.querySelector('.current-video-info h2').textContent = videoTitle;
+                        currentVideoIndex = index;
+                        
+                        // Update URL without reloading the page
+                        let newUrl = window.location.pathname + '?video=' + videoId;
+                        history.pushState(null, '', newUrl);
+                        
+                        // Update active class in playlist
+                        updateActiveVideo(videoId);
+                    }
+                    
+                    function updateActiveVideo(videoId) {
+                        // Remove active class from all videos
+                        let items = document.querySelectorAll('.playlist-item');
+                        items.forEach(item => item.classList.remove('active'));
+                        
+                        // Add active class to current video
+                        let activeItem = document.querySelector(`.playlist-item[data-video-id="${videoId}"]`);
+                        if (activeItem) {
+                            activeItem.classList.add('active');
+                            // Scroll the item into view in the playlist
+                            activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }
+                </script>
+                
+                <div class="player-controls">
+                    <button onclick="playPrevVideo()" class="control-btn" id="prev-btn" {% if videos|length <= 1 or loop.first %}disabled{% endif %}>
+                        <i class="fas fa-step-backward"></i> Previous
+                    </button>
+                    <button onclick="player.playVideo()" class="control-btn" id="play-btn">
+                        <i class="fas fa-play"></i> Play
+                    </button>
+                    <button onclick="player.pauseVideo()" class="control-btn" id="pause-btn">
+                        <i class="fas fa-pause"></i> Pause
+                    </button>
+                    <button onclick="playNextVideo()" class="control-btn" id="next-btn" {% if videos|length <= 1 or loop.last %}disabled{% endif %}>
+                        <i class="fas fa-step-forward"></i> Next
+                    </button>
+                </div>
+            {% else %}
+                <div class="empty-player">
+                    <div class="empty-message">
+                        <i class="fas fa-film"></i>
+                        <h2>No videos in this playlist</h2>
+                        {% if can_edit %}
+                            <p>Add videos to start watching</p>
+                            <a href="{{ url_for('add_video', playlist_id=playlist.id) }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Videos
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
             {% endif %}
         </div>
         
-        <div class="playlist-container">
-            {% if current_video %}
-                <div class="playlist-player">
-                    <div id="youtube-player" class="youtube-player" data-video-id="{{ current_video.youtube_id }}">
-                        <iframe width="100%" height="480" src="https://www.youtube.com/embed/{{ current_video.youtube_id }}?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                    </div>
-                    
-                    <div class="current-video-info">
-                        <h2>{{ current_video.title }}</h2>
-                        <p>Added: {{ current_video.added_at.strftime('%B %d, %Y') }}</p>
-                    </div>
-                </div>
-            {% else %}
-                <div class="alert alert-info">This playlist has no videos yet.</div>
-            {% endif %}
+        <div class="playlist-sidebar">
+            <div class="playlist-header">
+                <h3>Videos in this playlist</h3>
+                <span class="video-count">{{ videos|length }} videos</span>
+            </div>
             
-            <div class="playlist-videos">
-                <h2>Videos in this Playlist</h2>
-                
-                {% if not videos %}
-                    <p>No videos in this playlist yet.</p>
-                {% else %}
-                    <div class="video-list">
-                        {% for video in videos %}
-                            <div class="playlist-video {% if current_video and current_video.youtube_id == video.youtube_id %}playing{% endif %}" 
-                                 data-video-id="{{ video.youtube_id }}">
-                                <div class="video-thumbnail">
-                                    <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/mqdefault.jpg" 
-                                         alt="{{ video.title }}">
-                                    {% if current_video and current_video.youtube_id == video.youtube_id %}
-                                        <div class="now-playing"><i class="fas fa-play"></i> Now Playing</div>
-                                    {% endif %}
-                                </div>
-                                <div class="playlist-video-info">
-                                    <h3 class="playlist-video-title">{{ video.title }}</h3>
-                                    <p class="playlist-video-date">Added: {{ video.added_at.strftime('%b %d, %Y') }}</p>
-                                </div>
-                                <div class="playlist-video-actions">
-                                    <a href="{{ url_for('view_playlist', playlist_id=playlist.id, video=video.youtube_id) }}" class="btn play-video-btn">
-                                        <i class="fas fa-play"></i>
-                                    </a>
+            <div class="playlist-items">
+                {% if videos %}
+                    {% for video in videos %}
+                        <div class="playlist-item {% if current_video and current_video.youtube_id == video.youtube_id %}active{% endif %}" data-video-id="{{ video.youtube_id }}">
+                            <div class="thumbnail" onclick="playVideo('{{ video.youtube_id }}', '{{ video.title|replace("'", "\\'") }}', {{ loop.index0 }})">
+                                <img src="https://img.youtube.com/vi/{{ video.youtube_id }}/mqdefault.jpg" alt="{{ video.title }}">
+                                <div class="play-overlay">
+                                    <i class="fas fa-play"></i>
                                 </div>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                
-                {% if can_edit %}
-                    <div class="add-videos">
-                        <a href="{{ url_for('add_video', playlist_id=playlist.id) }}" class="btn btn-primary">Add Videos</a>
+                            <div class="video-details">
+                                <h4 onclick="playVideo('{{ video.youtube_id }}', '{{ video.title|replace("'", "\\'") }}', {{ loop.index0 }})">{{ video.title }}</h4>
+                                <span class="added-date">Added {{ video.added_at.strftime('%b %d, %Y') }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-playlist-message">
+                        <p>This playlist is empty</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
-</section>
+</div>
 
 <style>
+    .playlist-view-container {
+        margin: 2rem auto;
+        max-width: 1200px;
+    }
+    
     .playlist-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
     
-    .playlist-container {
+    .playlist-info h1 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .playlist-meta {
+        display: flex;
+        gap: 1rem;
+        color: var(--secondary-color);
+    }
+    
+    .playlist-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .playlist-content {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
+        grid-template-columns: 1fr 350px;
+        gap: 1.5rem;
     }
     
-    .playlist-player {
-        position: sticky;
-        top: 20px;
-    }
-    
-    .current-video-info {
-        margin-top: 1rem;
-    }
-    
-    .playlist-videos {
-        max-height: 600px;
-        overflow-y: auto;
-    }
-    
-    .video-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    
-    .playlist-video {
-        display: flex;
-        gap: 1rem;
+    .video-player-container {
         background-color: var(--card-bg);
         border-radius: var(--border-radius);
-        padding: 0.75rem;
+        overflow: hidden;
         box-shadow: 0 2px 5px var(--shadow-color);
     }
     
-    .video-thumbnail {
-        flex: 0 0 120px;
-        position: relative;
+    .current-video-info {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
     }
     
-    .video-thumbnail img {
+    .current-video-info h2 {
+        font-size: 1.2rem;
+    }
+    
+    .player-controls {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem;
+        background-color: var(--bg-color);
+    }
+    
+    .control-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .control-btn:hover {
+        background-color: var(--link-color);
+    }
+    
+    .control-btn:disabled {
+        background-color: var(--border-color);
+        cursor: not-allowed;
+    }
+    
+    .playlist-sidebar {
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 5px var(--shadow-color);
+        max-height: 600px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .playlist-sidebar .playlist-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 0;
+    }
+    
+    .playlist-items {
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+    
+    .playlist-item {
+        display: flex;
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .playlist-item:hover {
+        background-color: var(--hover-color);
+    }
+    
+    .playlist-item.active {
+        background-color: var(--active-item-bg);
+    }
+    
+    .thumbnail {
+        flex: 0 0 120px;
+        position: relative;
+        margin-right: 0.75rem;
+    }
+    
+    .thumbnail img {
         width: 100%;
         height: auto;
         border-radius: 4px;
     }
     
-    .now-playing {
+    .play-overlay {
         position: absolute;
         top: 0;
         left: 0;
-        background-color: rgba(0, 0, 0, 0.7);
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s;
+        border-radius: 4px;
+    }
+    
+    .play-overlay i {
         color: white;
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-        border-radius: 4px 0 4px 0;
+        font-size: 2rem;
     }
     
-    .playlist-video-info {
+    .thumbnail:hover .play-overlay {
+        opacity: 1;
+    }
+    
+    .video-details {
         flex: 1;
+        min-width: 0;
     }
     
-    .playlist-video-title {
-        font-size: 1rem;
+    .video-details h4 {
+        font-size: 0.9rem;
         margin-bottom: 0.5rem;
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
-    .playlist-video-date {
-        font-size: 0.875rem;
+    .added-date {
+        font-size: 0.8rem;
         color: var(--secondary-color);
     }
     
-    .playlist-video.playing {
-        background-color: var(--primary-color);
-        color: white;
-    }
-    
-    .playlist-video.playing .playlist-video-date {
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .add-videos {
-        margin-top: 1.5rem;
+    .empty-player {
+        padding: 4rem 2rem;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius);
         text-align: center;
     }
     
+    .empty-message i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: var(--secondary-color);
+    }
+    
+    .empty-playlist-message {
+        padding: 2rem;
+        text-align: center;
+        color: var(--secondary-color);
+    }
+    
     @media (max-width: 992px) {
-        .playlist-container {
+        .playlist-content {
             grid-template-columns: 1fr;
         }
         
-        .playlist-player {
-            position: relative;
-            top: 0;
-            margin-bottom: 1.5rem;
+        .playlist-sidebar {
+            max-height: 400px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .playlist-header {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .playlist-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        .player-controls {
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .control-btn {
+            flex: 1 0 40%;
         }
     }
 </style>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Load YouTube API
-    var tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    var firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    
-    var player;
-    
-    function onYouTubeIframeAPIReady() {
-        const playerContainer = document.getElementById('youtube-player');
-        if (!playerContainer) return;
-        
-        const videoId = playerContainer.getAttribute('data-video-id');
-        if (!videoId) return;
-        
-        player = new YT.Player('youtube-player', {
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
-            }
-        });
-    }
-    
-    function onPlayerReady(event) {
-        // Player is ready
-        console.log('Player ready');
-    }
-    
-    function onPlayerStateChange(event) {
-        // When video ends (state=0), play the next video
-        if (event.data === 0) {
-            playNextVideo();
-        }
-    }
-    
-    function playNextVideo() {
-        const videos = document.querySelectorAll('.playlist-video');
-        let nextVideo = null;
-        let found = false;
-        
-        for (let i = 0; i < videos.length; i++) {
-            if (found) {
-                nextVideo = videos[i];
-                break;
-            }
-            
-            if (videos[i].classList.contains('playing')) {
-                found = true;
-            }
-        }
-        
-        // If there's a next video, navigate to it
-        if (nextVideo) {
-            const playBtn = nextVideo.querySelector('.play-video-btn');
-            if (playBtn && playBtn.href) {
-                window.location.href = playBtn.href;
-            }
-        } else if (videos.length > 0) {
-            // Otherwise loop back to the first video
-            const playBtn = videos[0].querySelector('.play-video-btn');
-            if (playBtn && playBtn.href) {
-                window.location.href = playBtn.href;
-            }
-        }
-    }
-</script>
 {% endblock %}

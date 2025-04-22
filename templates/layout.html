@@ -60,9 +60,10 @@
         <div class="container">
             <p>&copy; {{ now.year }} Streamify - YouTube Playlist Manager</p>
             <div class="footer-links">
-                <a href="/help">Help</a>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
+                <a href="{{ url_for('about') }}">Σχετικά με εμάς</a>
+                <a href="{{ url_for('help') }}">Βοήθεια</a>
+                <a href="#">Πολιτική Απορρήτου</a>
+                <a href="#">Όροι Χρήσης</a>
             </div>
         </div>
     </footer>
