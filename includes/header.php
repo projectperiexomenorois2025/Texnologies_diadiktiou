@@ -35,27 +35,27 @@ $current_user = $is_authenticated ? getUserById($_SESSION['user_id']) : null;
                     </svg>
                 </a>
             </div>
-            
+
             <nav>
                 <ul class="main-nav">
                     <li><a href="index.php">Home</a></li>
                     <li><a href="help.php">Help</a></li>
                     <li><a href="playlists.php">Playlists</a></li>
-                    <li><a href="search.php">Search</a></li>
-                    
+                    <li><a href="search.php"><i class="fas fa-search"></i> Search</a></li>
+
                     <?php if ($is_authenticated): ?>
                         <li><a href="create_playlist.php">Create Playlist</a></li>
                         <li><a href="following.php">Following</a></li>
                         <li><a href="export.php">Export Data</a></li>
                     <?php endif; ?>
                 </ul>
-                
+
                 <div class="user-nav">
                     <button id="theme-toggle" class="theme-toggle">
                         <i class="fas fa-moon dark-icon"></i>
                         <i class="fas fa-sun light-icon"></i>
                     </button>
-                    
+
                     <?php if ($is_authenticated): ?>
                         <div class="user-menu">
                             <button class="user-menu-btn">
@@ -75,5 +75,5 @@ $current_user = $is_authenticated ? getUserById($_SESSION['user_id']) : null;
             </nav>
         </div>
     </header>
-    
+
     <main class="container">
