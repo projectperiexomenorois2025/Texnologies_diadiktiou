@@ -159,6 +159,107 @@ def profile(user_id=None):
         followers=followers
     )
 
+@app.route('/edit_profile', methods=['GET', 'POST'])
+def edit_profile():
+    # Check if user is logged in
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να επεξεργαστείτε το προφίλ σας')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'update_profile':
+            # Update user profile
+            username = request.form.get('username')
+            email = request.form.get('email')
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            current_password = request.form.get('current_password')
+            new_password = request.form.get('new_password')
+            confirm_password = request.form.get('confirm_password')
+            
+            # Validate input
+            if not username or not email or not first_name or not last_name:
+                flash('Όλα τα πεδία είναι υποχρεωτικά')
+                return render_template('edit_profile.html', user=user)
+            
+            # Check if username or email is already taken by another user
+            existing_user = User.query.filter(
+                (User.username == username) | (User.email == email),
+                User.id != user_id
+            ).first()
+            
+            if existing_user:
+                if existing_user.username == username:
+                    flash('Το όνομα χρήστη χρησιμοποιείται ήδη')
+                else:
+                    flash('Το email χρησιμοποιείται ήδη')
+                return render_template('edit_profile.html', user=user)
+            
+            # Update user details
+            user.username = username
+            user.email = email
+            user.first_name = first_name
+            user.last_name = last_name
+            
+            # Update password if provided
+            if new_password:
+                # Verify current password
+                if not check_password_hash(user.password_hash, current_password):
+                    flash('Ο τρέχων κωδικός πρόσβασης είναι λανθασμένος')
+                    return render_template('edit_profile.html', user=user)
+                
+                # Verify new password and confirmation match
+                if new_password != confirm_password:
+                    flash('Οι νέοι κωδικοί πρόσβασης δεν ταιριάζουν')
+                    return render_template('edit_profile.html', user=user)
+                
+                # Update password
+                user.password_hash = generate_password_hash(new_password)
+            
+            db.session.commit()
+            flash('Το προφίλ σας ενημερώθηκε με επιτυχία')
+            return redirect(url_for('profile'))
+            
+        elif action == 'delete_account':
+            # Verify password before deleting account
+            password = request.form.get('password')
+            
+            if not check_password_hash(user.password_hash, password):
+                flash('Ο κωδικός πρόσβασης είναι λανθασμένος')
+                return render_template('edit_profile.html', user=user)
+            
+            # Delete all user data
+            
+            # 1. Delete all videos from user's playlists
+            user_playlists = Playlist.query.filter_by(user_id=user_id).all()
+            for playlist in user_playlists:
+                Video.query.filter_by(playlist_id=playlist.id).delete()
+            
+            # 2. Delete all playlists
+            Playlist.query.filter_by(user_id=user_id).delete()
+            
+            # 3. Delete all following relationships
+            Follower.query.filter(
+                (Follower.follower_id == user_id) | (Follower.following_id == user_id)
+            ).delete()
+            
+            # 4. Delete the user
+            db.session.delete(user)
+            db.session.commit()
+            
+            # Clear session
+            session.clear()
+            
+            flash('Ο λογαριασμός σας έχει διαγραφεί με επιτυχία')
+            return redirect(url_for('index'))
+    
+    return render_template('edit_profile.html', user=user)
+
 @app.route('/follow/<int:user_id>', methods=['POST'])
 def follow_user(user_id):
     # Check if user is logged in

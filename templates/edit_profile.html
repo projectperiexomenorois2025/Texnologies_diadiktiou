@@ -1,0 +1,211 @@
+{% extends "layout.html" %}
+
+{% block title %}Επεξεργασία Προφίλ - YouTube Playlist Manager{% endblock %}
+
+{% block content %}
+<section class="form-section">
+    <div class="container">
+        <div class="form-container">
+            <h1 class="form-title">Επεξεργασία Προφίλ</h1>
+            
+            <ul class="nav nav-tabs profile-tabs">
+                <li class="active"><a href="#profile-details" data-toggle="tab">Στοιχεία Προφίλ</a></li>
+                <li><a href="#change-password" data-toggle="tab">Αλλαγή Κωδικού</a></li>
+                <li><a href="#delete-account" data-toggle="tab">Διαγραφή Λογαριασμού</a></li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- Στοιχεία Προφίλ -->
+                <div id="profile-details" class="tab-pane active">
+                    <form method="POST" action="{{ url_for('edit_profile') }}">
+                        <input type="hidden" name="action" value="update_profile">
+                        
+                        <div class="form-group">
+                            <label for="username">Όνομα Χρήστη</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="first_name">Όνομα</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="last_name">Επώνυμο</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+                        </div>
+                        
+                        <button type="submit" class="form-submit">Αποθήκευση Αλλαγών</button>
+                    </form>
+                </div>
+                
+                <!-- Αλλαγή Κωδικού -->
+                <div id="change-password" class="tab-pane">
+                    <form method="POST" action="{{ url_for('edit_profile') }}">
+                        <input type="hidden" name="action" value="update_profile">
+                        <input type="hidden" name="username" value="{{ user.username }}">
+                        <input type="hidden" name="email" value="{{ user.email }}">
+                        <input type="hidden" name="first_name" value="{{ user.first_name }}">
+                        <input type="hidden" name="last_name" value="{{ user.last_name }}">
+                        
+                        <div class="form-group">
+                            <label for="current_password">Τρέχων Κωδικός</label>
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new_password">Νέος Κωδικός</label>
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirm_password">Επιβεβαίωση Κωδικού</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                        </div>
+                        
+                        <button type="submit" class="form-submit">Αλλαγή Κωδικού</button>
+                    </form>
+                </div>
+                
+                <!-- Διαγραφή Λογαριασμού -->
+                <div id="delete-account" class="tab-pane">
+                    <div class="alert alert-danger">
+                        <strong>Προσοχή!</strong> Η διαγραφή του λογαριασμού σας είναι μη αναστρέψιμη. Όλα τα δεδομένα σας, συμπεριλαμβανομένων των λιστών αναπαραγωγής και των ακολούθων σας, θα διαγραφούν μόνιμα.
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('edit_profile') }}" id="delete-account-form">
+                        <input type="hidden" name="action" value="delete_account">
+                        
+                        <div class="form-group">
+                            <label for="password">Επιβεβαιώστε τον κωδικό σας για να συνεχίσετε</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        
+                        <button type="button" class="btn btn-danger" id="confirm-delete-btn">Διαγραφή Λογαριασμού</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="form-footer">
+                <a href="{{ url_for('profile') }}" class="btn btn-secondary">Επιστροφή στο Προφίλ</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .profile-tabs {
+        display: flex;
+        list-style: none;
+        margin-bottom: 20px;
+        padding: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .profile-tabs li {
+        margin-right: 10px;
+    }
+    
+    .profile-tabs li a {
+        display: block;
+        padding: 10px 15px;
+        text-decoration: none;
+        color: var(--text-color);
+        opacity: 0.7;
+        transition: opacity 0.3s;
+    }
+    
+    .profile-tabs li.active a {
+        opacity: 1;
+        border-bottom: 2px solid var(--primary-color);
+    }
+    
+    .tab-content {
+        padding-top: 20px;
+    }
+    
+    .tab-pane {
+        display: none;
+    }
+    
+    .tab-pane.active {
+        display: block;
+    }
+    
+    .alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+        border-radius: var(--border-radius);
+    }
+    
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabLinks = document.querySelectorAll('.profile-tabs li a');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all tabs and panes
+            document.querySelectorAll('.profile-tabs li').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            tabPanes.forEach(pane => {
+                pane.classList.remove('active');
+            });
+            
+            // Add active class to current tab and pane
+            this.parentElement.classList.add('active');
+            const target = this.getAttribute('href').substring(1);
+            document.getElementById(target).classList.add('active');
+        });
+    });
+    
+    // Delete account confirmation
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const deleteAccountForm = document.getElementById('delete-account-form');
+    
+    confirmDeleteBtn.addEventListener('click', function() {
+        const isConfirmed = confirm('Είστε βέβαιοι ότι θέλετε να διαγράψετε τον λογαριασμό σας; Αυτή η ενέργεια είναι μη αναστρέψιμη και όλα τα δεδομένα σας θα χαθούν.');
+        
+        if (isConfirmed) {
+            deleteAccountForm.submit();
+        }
+    });
+    
+    // Form validation
+    const passwordChangeForm = document.querySelector('#change-password form');
+    passwordChangeForm.addEventListener('submit', function(e) {
+        const newPassword = document.getElementById('new_password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (newPassword !== confirmPassword) {
+            e.preventDefault();
+            alert('Οι κωδικοί δεν ταιριάζουν. Παρακαλώ προσπαθήστε ξανά.');
+        }
+    });
+});
+</script>
+{% endblock %}

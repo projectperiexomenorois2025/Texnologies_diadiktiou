@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}{{ user.username }}'s Profile - Streamify{% endblock %}
+{% block title %}Προφίλ {{ user.username }} - YouTube Playlist Manager{% endblock %}
 
 {% block content %}
 <section class="profile-section">
@@ -10,14 +10,14 @@
                 <h1 class="profile-username">{{ user.username }}</h1>
                 
                 <div class="profile-details">
-                    <p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                    <p><strong>Όνομα:</strong> {{ user.first_name }} {{ user.last_name }}</p>
                     {% if is_current_user %}
                         <p><strong>Email:</strong> {{ user.email }}</p>
                     {% endif %}
-                    <p><strong>Member since:</strong> {{ user.created_at.strftime('%B %d, %Y') }}</p>
-                    <p><strong>Playlists:</strong> {{ playlists|length }}</p>
-                    <p><strong>Following:</strong> {{ following|length }}</p>
-                    <p><strong>Followers:</strong> {{ followers|length }}</p>
+                    <p><strong>Μέλος από:</strong> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
+                    <p><strong>Λίστες:</strong> {{ playlists|length }}</p>
+                    <p><strong>Ακολουθεί:</strong> {{ following|length }}</p>
+                    <p><strong>Ακόλουθοι:</strong> {{ followers|length }}</p>
                 </div>
                 
                 {% if session.get('user_id') and not is_current_user %}
@@ -25,19 +25,19 @@
                         <form method="POST" action="{{ url_for('follow_user', user_id=user.id) }}">
                             <input type="hidden" name="action" value="{{ 'unfollow' if is_following else 'follow' }}">
                             <button type="submit" id="follow-btn" class="btn {{ 'btn-secondary' if is_following else 'btn-primary' }}">
-                                {{ 'Unfollow' if is_following else 'Follow' }}
+                                {% if is_following %}Διακοπή Ακολούθησης{% else %}Ακολούθησε{% endif %}
                             </button>
                         </form>
                     </div>
                 {% elif is_current_user %}
                     <div class="profile-actions">
-                        <a href="{{ url_for('edit_profile') }}" class="btn">Edit Profile</a>
+                        <a href="{{ url_for('edit_profile') }}" class="btn">Επεξεργασία Προφίλ</a>
                     </div>
                 {% endif %}
             </div>
             
             <div class="profile-content">
-                <h2>Playlists</h2>
+                <h2>Λίστες Αναπαραγωγής</h2>
                 
                 {% if playlists %}
                     <div class="grid">
@@ -50,31 +50,31 @@
                                             <span class="private-badge"><i class="fas fa-lock"></i></span>
                                         {% endif %}
                                     </h3>
-                                    <p class="card-meta">Created: {{ playlist.created_at.strftime('%b %d, %Y') }}</p>
-                                    <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">View Playlist</a>
+                                    <p class="card-meta">Δημιουργήθηκε: {{ playlist.created_at.strftime('%d/%m/%Y') }}</p>
+                                    <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Προβολή Λίστας</a>
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p>No playlists available.</p>
+                    <p>Δεν υπάρχουν διαθέσιμες λίστες.</p>
                 {% endif %}
                 
                 {% if is_current_user %}
                     <div class="create-playlist">
-                        <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Create New Playlist</a>
+                        <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Δημιουργία Νέας Λίστας</a>
                     </div>
                 {% endif %}
                 
                 {% if following %}
-                    <h2>Following</h2>
+                    <h2>Ακολουθεί</h2>
                     <div class="grid">
                         {% for follow in following %}
                             <div class="card user-card">
                                 <div class="card-body">
                                     <h3 class="card-title">{{ follow.username }}</h3>
                                     <p class="card-meta">{{ follow.first_name }} {{ follow.last_name }}</p>
-                                    <a href="{{ url_for('profile', user_id=follow.id) }}" class="btn">View Profile</a>
+                                    <a href="{{ url_for('profile', user_id=follow.id) }}" class="btn">Προβολή Προφίλ</a>
                                 </div>
                             </div>
                         {% endfor %}
