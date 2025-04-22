@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="el">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
             <div class="header-content">
                 <div class="logo">
                     <a href="{{ url_for('index') }}">
-                        <h1>Streamify</h1>
+                        <h1>YouTube Playlist Manager</h1>
                     </a>
                 </div>
                 
@@ -36,7 +36,7 @@
                 </nav>
                 
                 <div class="theme-toggle">
-                    <button id="theme-toggle-btn" title="Toggle dark/light mode">
+                    <button id="theme-toggle-btn" title="Εναλλαγή φωτεινού/σκοτεινού θέματος">
                         <i class="fas fa-moon"></i>
                     </button>
                 </div>
@@ -60,7 +60,7 @@
     
     <footer>
         <div class="container">
-            <p>&copy; {{ now.year }} Streamify - YouTube Playlist Manager</p>
+            <p>&copy; {{ now.year }} YouTube Playlist Manager</p>
             <div class="footer-links">
                 <a href="{{ url_for('about') }}">Σχετικά με εμάς</a>
                 <a href="{{ url_for('help') }}">Βοήθεια</a>
