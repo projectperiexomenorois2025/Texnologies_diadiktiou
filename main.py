@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "development-secret-key")
 
 # Configure the database
+# Το URI της βάσης δεδομένων
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///streamify.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
