@@ -7,9 +7,14 @@
     <div class="container">
         <div class="section-header">
             <h1>Public Playlists</h1>
-            {% if session.get('user_id') %}
-                <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Create New Playlist</a>
-            {% endif %}
+            <div class="action-buttons">
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('create_playlist') }}" class="btn btn-primary">Create New Playlist</a>
+                {% endif %}
+                <a href="{{ url_for('export_playlists') }}" class="btn btn-secondary">
+                    <i class="fas fa-download"></i> Export Playlists
+                </a>
+            </div>
         </div>
         
         {% if playlists.items %}
