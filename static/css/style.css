@@ -1,3 +1,28 @@
+
+.error-section {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.error-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.error-container h1 {
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.error-container p {
+    margin-bottom: 2rem;
+    color: var(--text-color);
+}
+
 /* Root Variables for Theming */
 :root {
     /* Light Theme Colors */

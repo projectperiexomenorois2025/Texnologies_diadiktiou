@@ -8,11 +8,25 @@ import google_auth_oauthlib.flow
 import json
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+)
 
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "development-secret-key")
+
+# Error handling
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    app.logger.error(f'Server Error: {error}')
+    return render_template('error.html', error=error), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('error.html', error=error), 404
 
 # Configure the database
 # Το URI της βάσης δεδομένων

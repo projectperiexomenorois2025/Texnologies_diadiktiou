@@ -1,0 +1,16 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Σφάλμα - Streamify{% endblock %}
+
+{% block content %}
+<section class="error-section">
+    <div class="container">
+        <div class="error-container">
+            <h1>Ωχ! Κάτι πήγε στραβά</h1>
+            <p>{{ error }}</p>
+            <a href="{{ url_for('index') }}" class="btn">Επιστροφή στην αρχική σελίδα</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
