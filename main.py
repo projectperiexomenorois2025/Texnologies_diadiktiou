@@ -30,7 +30,14 @@ def not_found_error(error):
 
 # Configure the database
 # Το URI της βάσης δεδομένων
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///streamify.db")
+database_url = os.environ.get("DATABASE_URL", "sqlite:///streamify.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Import db and models
@@ -392,6 +399,32 @@ def follow_user(user_id):
             flash(f'You are not following {target_user.username}')
 
     return redirect(url_for('profile', user_id=user_id))
+
+@app.route('/export_playlists')
+def export_playlists():
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να εξάγετε τις λίστες')
+        return redirect(url_for('login'))
+    
+    playlists = Playlist.query.filter(
+        (Playlist.is_public == True) | (Playlist.user_id == session['user_id'])
+    ).all()
+    
+    # Create YAML data
+    data = {
+        'playlists': [{
+            'id': p.id,
+            'title': p.title,
+            'is_public': p.is_public,
+            'created_at': p.created_at.isoformat(),
+            'videos': [{
+                'youtube_id': v.youtube_id,
+                'title': v.title
+            } for v in p.videos]
+        } for p in playlists]
+    }
+    
+    return jsonify(data)
 
 @app.route('/playlists')
 def playlists():
