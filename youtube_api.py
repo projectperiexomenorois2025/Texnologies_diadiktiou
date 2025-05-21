@@ -48,7 +48,7 @@ def get_oauth_flow():
         client_config=get_client_config(),
         scopes=SCOPES
     )
-    flow.redirect_uri = url_for('youtube_oauth_callback', _external=True)
+    flow.redirect_uri = "https://dfbc0bf8-a801-4318-99c6-963dc9419c92-00-3us2ncr363jxw.worf.replit.dev/youtube/callback"
     return flow
 
 def get_youtube_client(credentials):
