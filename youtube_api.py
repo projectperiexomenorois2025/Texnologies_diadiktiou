@@ -7,8 +7,8 @@ from google_auth_oauthlib.flow import Flow
 from flask import current_app, url_for
 
 # OAuth credentials
-CLIENT_ID = '101637104101-m51bljq3iaj8fcd4t57lcrks4jevefvo.apps.googleusercontent.com'
-CLIENT_SECRET = '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'
+CLIENT_ID = os.environ.get('YOUTUBE_CLIENT_ID')
+CLIENT_SECRET = os.environ.get('YOUTUBE_CLIENT_SECRET')
 API_KEY = os.environ.get('YOUTUBE_API_KEY')
 
 # YouTube API service name and version
