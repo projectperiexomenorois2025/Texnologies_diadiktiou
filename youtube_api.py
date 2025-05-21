@@ -9,7 +9,7 @@ from flask import current_app, url_for
 # OAuth credentials
 CLIENT_ID = '101637104101-m51bljq3iaj8fcd4t57lcrks4jevefvo.apps.googleusercontent.com'
 CLIENT_SECRET = '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'
-API_KEY = os.getenv('YOUTUBE_API_KEY')
+API_KEY = 'AIzaSyBedv6w44veki4fnSbBQL2OfsJ0RTM2XtU'
 
 # YouTube API service name and version
 API_SERVICE_NAME = 'youtube'
