@@ -1,3 +1,25 @@
+
+document.addEventListener('DOMContentLoaded', function() {
+    const methodBtns = document.querySelectorAll('.method-btn');
+    const searchMethod = document.getElementById('search-method');
+    const manualMethod = document.getElementById('manual-method');
+
+    methodBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            methodBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            if (this.dataset.method === 'search') {
+                searchMethod.style.display = 'block';
+                manualMethod.style.display = 'none';
+            } else {
+                searchMethod.style.display = 'none';
+                manualMethod.style.display = 'block';
+            }
+        });
+    });
+});
+
 /**
  * Theme toggler functionality
  * Handles switching between light and dark themes
