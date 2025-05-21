@@ -1,0 +1,24 @@
+
+version: '3'
+services:
+  web:
+    build: .
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: streamify
+      DB_PASSWORD: streamify_pass
+      DB_NAME: streamify
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: streamify
+      MYSQL_USER: streamify
+      MYSQL_PASSWORD: streamify_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - ./setup.sql:/docker-entrypoint-initdb.d/setup.sql
