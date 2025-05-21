@@ -55,16 +55,10 @@ def get_youtube_client(credentials):
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials
         )
-        # Test API connection
-        request = youtube.videos().list(
-            part="snippet",
-            id="dQw4w9WgXcQ"  # Test with a known video ID
-        )
-        request.execute()
         return youtube
     except Exception as e:
         current_app.logger.error(f"Error building YouTube client: {e}")
-        return None
+        raise Exception(f"Failed to initialize YouTube client: {str(e)}")
 
 def search_videos(youtube, query, max_results=10):
     """Search for videos on YouTube based on the query."""

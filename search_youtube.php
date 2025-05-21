@@ -43,10 +43,15 @@ $error_message = null;
 if (isset($_GET['q']) && !empty($_GET['q'])) {
     $query = $_GET['q'];
     
-    // Check if we have an access token
-    if (isset($_SESSION['youtube_access_token'])) {
-        // Search with OAuth access token
-        $search_results = searchYouTube($query, $_SESSION['youtube_access_token']);
+    try {
+        // Check if we have an access token
+        if (isset($_SESSION['youtube_access_token'])) {
+            // Search with OAuth access token
+            $search_results = searchYouTube($query, $_SESSION['youtube_access_token']);
+            
+            if (!$search_results) {
+                throw new Exception("Failed to fetch search results");
+            }
         
         // Check if token expired or other error
         if (isset($search_results['error'])) {
