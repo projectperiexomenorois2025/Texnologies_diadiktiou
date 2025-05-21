@@ -55,6 +55,12 @@ def get_youtube_client(credentials):
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials
         )
+        # Test API connection
+        request = youtube.videos().list(
+            part="snippet",
+            id="dQw4w9WgXcQ"  # Test with a known video ID
+        )
+        request.execute()
         return youtube
     except Exception as e:
         current_app.logger.error(f"Error building YouTube client: {e}")
