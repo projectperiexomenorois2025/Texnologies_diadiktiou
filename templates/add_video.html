@@ -9,7 +9,7 @@
             <h1>Προσθήκη Βίντεο στη Λίστα "{{ playlist.title }}"</h1>
             <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Επιστροφή στη Λίστα</a>
         </div>
-        
+
         {% if not has_youtube_auth %}
         <div class="youtube-auth-message">
             <div class="youtube-auth-content">
@@ -21,8 +21,13 @@
             </div>
         </div>
         {% else %}
-        <div class="search-container">
-            <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="GET" class="search-form">
+        <div class="video-input-method">
+                <button class="method-btn active" data-method="search">Αναζήτηση YouTube</button>
+                <button class="method-btn" data-method="manual">Χειροκίνητη Εισαγωγή</button>
+            </div>
+
+            <div class="search-container" id="search-method">
+                <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="GET" class="search-form">
                 <div class="search-input">
                     <input type="text" name="q" id="search-query" placeholder="Αναζήτηση βίντεο στο YouTube..." value="{{ query }}" required>
                     <button type="submit" class="search-btn">
@@ -31,11 +36,11 @@
                 </div>
             </form>
         </div>
-        
+
         {% if query %}
             <div class="search-results">
                 <h2>Αποτελέσματα Αναζήτησης για "{{ query }}"</h2>
-                
+
                 {% if search_results %}
                     <div class="video-grid">
                         {% for video in search_results %}
@@ -51,7 +56,7 @@
                                 <div class="video-info">
                                     <h3 class="video-title">{{ video.snippet.title }}</h3>
                                     <p class="video-channel">{{ video.snippet.channelTitle }}</p>
-                                    
+
                                     <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="POST">
                                         <input type="hidden" name="youtube_id" value="{{ video.id.videoId }}">
                                         <input type="hidden" name="title" value="{{ video.snippet.title }}">
@@ -81,17 +86,17 @@
     .search-container {
         margin-bottom: 2rem;
     }
-    
+
     .search-form {
         max-width: 800px;
         margin: 0 auto;
     }
-    
+
     .search-input {
         display: flex;
         gap: 0.5rem;
     }
-    
+
     .search-input input {
         flex: 1;
         padding: 0.75rem;
@@ -99,7 +104,7 @@
         border-radius: var(--border-radius);
         font-size: 1rem;
     }
-    
+
     .search-btn {
         padding: 0.75rem 1.5rem;
         background-color: var(--primary-color);
@@ -109,18 +114,18 @@
         cursor: pointer;
         font-weight: 500;
     }
-    
+
     .search-results {
         margin-top: 2rem;
     }
-    
+
     .video-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 1.5rem;
         margin-top: 1.5rem;
     }
-    
+
     .video-result-card {
         background-color: var(--card-bg);
         border-radius: var(--border-radius);
@@ -128,21 +133,21 @@
         box-shadow: 0 2px 5px var(--shadow-color);
         transition: transform 0.3s;
     }
-    
+
     .video-result-card:hover {
         transform: translateY(-5px);
     }
-    
+
     .video-thumbnail {
         position: relative;
     }
-    
+
     .video-thumbnail img {
         width: 100%;
         height: auto;
         display: block;
     }
-    
+
     .video-duration {
         position: absolute;
         bottom: 0;
@@ -152,11 +157,11 @@
         padding: 0.25rem 0.5rem;
         border-top-left-radius: 4px;
     }
-    
+
     .video-info {
         padding: 1rem;
     }
-    
+
     .video-title {
         font-size: 1rem;
         margin-bottom: 0.5rem;
@@ -167,13 +172,13 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
-    
+
     .video-channel {
         font-size: 0.875rem;
         color: var(--secondary-color);
         margin-bottom: 1rem;
     }
-    
+
     .add-video-btn {
         width: 100%;
         padding: 0.5rem;
@@ -185,17 +190,17 @@
         font-weight: 500;
         transition: background-color 0.3s;
     }
-    
+
     .add-video-btn:hover {
         background-color: var(--link-color);
     }
-    
+
     .preview-btn {
         color: white;
         text-decoration: none;
         font-size: 0.75rem;
     }
-    
+
     .search-help, .youtube-auth-message {
         background-color: var(--card-bg);
         padding: 2rem;
@@ -204,14 +209,14 @@
         max-width: 600px;
         margin: 2rem auto;
     }
-    
+
     .youtube-auth-content {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 1.5rem;
     }
-    
+
     .youtube-auth-btn {
         display: inline-flex;
         align-items: center;
@@ -225,16 +230,16 @@
         text-decoration: none;
         transition: background-color 0.3s;
     }
-    
+
     .youtube-auth-btn:hover {
         background-color: #CC0000;
     }
-    
+
     @media (max-width: 768px) {
         .search-input {
             flex-direction: column;
         }
-        
+
         .video-grid {
             grid-template-columns: 1fr;
         }
