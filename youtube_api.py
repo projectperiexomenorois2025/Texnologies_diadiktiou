@@ -16,7 +16,11 @@ API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
 # Define scopes needed for the application
-SCOPES = ['https://www.googleapis.com/auth/youtube.readonly']
+SCOPES = [
+    'https://www.googleapis.com/auth/youtube.readonly',
+    'https://www.googleapis.com/auth/youtube',
+    'https://www.googleapis.com/auth/youtube.force-ssl'
+]
 
 def get_client_config():
     """Get the client configuration for OAuth2 flow."""

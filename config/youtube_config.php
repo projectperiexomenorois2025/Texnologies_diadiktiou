@@ -7,7 +7,7 @@
 define('YOUTUBE_API_KEY', 'AIzaSyBedv6w44veki4fnSbBQL2OfsJ0RTM2XtU');
 define('YOUTUBE_CLIENT_ID', '101637104101-m51bljq3iaj8fcd4t57lcrks4jevefvo.apps.googleusercontent.com'); 
 define('YOUTUBE_CLIENT_SECRET', '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');
-define('YOUTUBE_REDIRECT_URI', 'https://' . $_SERVER['HTTP_HOST'] . '/youtube/callback');
+define('YOUTUBE_REDIRECT_URI', 'https://' . $_SERVER['HTTP_HOST'] . '/oauth2callback');
 define('YOUTUBE_API_URL', 'https://www.googleapis.com/youtube/v3/');
 
 // Get Google OAuth URL
