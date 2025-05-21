@@ -80,6 +80,10 @@ def about():
 def help():
     return render_template('help.html')
 
+@app.route('/policies')
+def policies():
+    return render_template('policies.html')
+
 @app.route('/search')
 def search():
     query = request.args.get('text_search', '')
