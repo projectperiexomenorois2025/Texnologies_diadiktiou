@@ -10,7 +10,6 @@
             <a href="{{ url_for('view_playlist', playlist_id=playlist.id) }}" class="btn">Επιστροφή στη Λίστα</a>
         </div>
 
-        {% if not has_youtube_auth %}
         <div class="video-input-method">
             <button class="method-btn active" data-method="manual">Χειροκίνητη Εισαγωγή</button>
             <button class="method-btn" data-method="youtube">Σύνδεση με YouTube</button>
