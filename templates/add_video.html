@@ -11,9 +11,50 @@
         </div>
 
         <div class="video-input-method">
-            <button class="method-btn active" data-method="search">Αναζήτηση YouTube</button>
-            <button class="method-btn" data-method="manual">Χειροκίνητη Εισαγωγή</button>
+            <button class="method-btn active" data-method="search">
+                <i class="fab fa-youtube"></i> Αναζήτηση YouTube
+            </button>
+            <button class="method-btn" data-method="manual">
+                <i class="fas fa-edit"></i> Χειροκίνητη Εισαγωγή
+            </button>
         </div>
+
+        <style>
+            .video-input-method {
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 2rem;
+                justify-content: center;
+            }
+            
+            .method-btn {
+                padding: 0.8rem 1.5rem;
+                border: none;
+                border-radius: 8px;
+                background-color: var(--bg-secondary);
+                color: var(--text-color);
+                font-size: 1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            
+            .method-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            
+            .method-btn.active {
+                background-color: var(--primary-color);
+                color: white;
+            }
+            
+            .method-btn i {
+                font-size: 1.2rem;
+            }
+        </style>
 
         <div id="search-method" class="search-container">
             <form id="youtube-search-form" method="GET" class="search-form">
