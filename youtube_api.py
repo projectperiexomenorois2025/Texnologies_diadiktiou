@@ -22,6 +22,9 @@ SCOPES = [
     'https://www.googleapis.com/auth/youtube.force-ssl'
 ]
 
+# Authorized test user email
+AUTHORIZED_EMAIL = 'projectperiexomenorois2025@gmail.com'
+
 def get_client_config():
     """Get the client configuration for OAuth2 flow."""
     return {
