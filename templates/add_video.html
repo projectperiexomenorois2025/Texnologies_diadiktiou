@@ -11,11 +11,68 @@
         </div>
 
         <div class="video-input-method">
-            <button class="method-btn active" data-method="manual">Χειροκίνητη Εισαγωγή</button>
-            <button class="method-btn" data-method="youtube">Σύνδεση με YouTube</button>
+            <button class="method-btn active" data-method="search">Αναζήτηση YouTube</button>
+            <button class="method-btn" data-method="manual">Χειροκίνητη Εισαγωγή</button>
         </div>
 
-        <div id="manual-method">
+        <div id="search-method" class="search-container">
+            <form id="youtube-search-form" method="GET" class="search-form">
+                <div class="search-input">
+                    <input type="text" name="q" id="search-query" 
+                           placeholder="Αναζήτηση βίντεο στο YouTube..." 
+                           value="{{ query }}" required>
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> Αναζήτηση
+                    </button>
+                </div>
+            </form>
+
+            {% if not has_youtube_auth %}
+            <div class="youtube-auth-message">
+                <div class="youtube-auth-content">
+                    <h2>Απαιτείται Πρόσβαση YouTube</h2>
+                    <p>Για να αναζητήσετε βίντεο από το YouTube, χρειάζεται να συνδεθείτε με το λογαριασμό σας.</p>
+                    <a href="{{ auth_url }}" class="btn btn-primary youtube-auth-btn">
+                        <i class="fab fa-youtube"></i> Σύνδεση με YouTube
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if search_results %}
+            <div class="search-results">
+                <h2>Αποτελέσματα Αναζήτησης για "{{ query }}"</h2>
+                <div class="video-grid">
+                    {% for video in search_results %}
+                    <div class="video-result-card">
+                        <div class="video-thumbnail">
+                            <img src="{{ video.snippet.thumbnails.medium.url }}" alt="{{ video.snippet.title }}">
+                            <div class="video-duration">
+                                <a href="https://www.youtube.com/watch?v={{ video.id.videoId }}" 
+                                   target="_blank" class="preview-btn">
+                                    <i class="fas fa-external-link-alt"></i> Προεπισκόπηση
+                                </a>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">{{ video.snippet.title }}</h3>
+                            <p class="video-channel">{{ video.snippet.channelTitle }}</p>
+                            <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="POST">
+                                <input type="hidden" name="youtube_id" value="{{ video.id.videoId }}">
+                                <input type="hidden" name="title" value="{{ video.snippet.title }}">
+                                <button type="submit" class="add-video-btn">
+                                    <i class="fas fa-plus"></i> Προσθήκη στη Λίστα
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="manual-method" style="display: none;">
             <div class="warning-message">
                 <p><i class="fas fa-exclamation-triangle"></i> Προσοχή: Η χειροκίνητη εισαγωγή περιεχομένου θα επιφέρει σημαντικό βαθμολογικό πέναλτι.</p>
             </div>
@@ -33,96 +90,35 @@
                 </button>
             </form>
         </div>
-
-        <div id="youtube-method" style="display: none;" class="youtube-auth-message">
-            <div class="youtube-auth-content">
-                <h2>Απαιτείται Πρόσβαση YouTube</h2>
-                <p>Για να αναζητήσετε και να προσθέσετε βίντεο από το YouTube, χρειάζεται να συνδεθείτε με το λογαριασμό σας.</p>
-                <a href="{{ auth_url }}" class="btn btn-primary youtube-auth-btn">
-                    <i class="fab fa-youtube"></i> Σύνδεση με YouTube
-                </a>
-            </div>
-        </div>
-        {% else %}
-        <div class="video-input-method">
-                <button class="method-btn active" data-method="search">Αναζήτηση YouTube</button>
-                <button class="method-btn" data-method="manual">Χειροκίνητη Εισαγωγή</button>
-            </div>
-
-            <div class="manual-input" id="manual-method" style="display: none;">
-                <div class="warning-message">
-                    <p><i class="fas fa-exclamation-triangle"></i> Προσοχή: Η χειροκίνητη εισαγωγή περιεχομένου θα επιφέρει σημαντικό βαθμολογικό πέναλτι.</p>
-                </div>
-                <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="POST" class="manual-form">
-                    <div class="form-group">
-                        <label for="youtube_id">YouTube Video ID</label>
-                        <input type="text" name="youtube_id" id="youtube_id" required placeholder="π.χ. dQw4w9WgXcQ">
-                    </div>
-                    <div class="form-group">
-                        <label for="title">Τίτλος Βίντεο</label>
-                        <input type="text" name="title" id="title" required placeholder="Εισάγετε τον τίτλο του βίντεο">
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Προσθήκη Βίντεο
-                    </button>
-                </form>
-            </div>
-
-            <div class="search-container" id="search-method">
-                <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="GET" class="search-form">
-                <div class="search-input">
-                    <input type="text" name="q" id="search-query" placeholder="Αναζήτηση βίντεο στο YouTube..." value="{{ query }}" required>
-                    <button type="submit" class="search-btn">
-                        <i class="fas fa-search"></i> Αναζήτηση
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        {% if query %}
-            <div class="search-results">
-                <h2>Αποτελέσματα Αναζήτησης για "{{ query }}"</h2>
-
-                {% if search_results %}
-                    <div class="video-grid">
-                        {% for video in search_results %}
-                            <div class="video-result-card">
-                                <div class="video-thumbnail">
-                                    <img src="{{ video.snippet.thumbnails.medium.url }}" alt="{{ video.snippet.title }}">
-                                    <div class="video-duration">
-                                        <a href="https://www.youtube.com/watch?v={{ video.id.videoId }}" target="_blank" class="preview-btn">
-                                            <i class="fas fa-external-link-alt"></i> Προεπισκόπηση
-                                        </a>
-                                    </div>
-                                </div>
-                                <div class="video-info">
-                                    <h3 class="video-title">{{ video.snippet.title }}</h3>
-                                    <p class="video-channel">{{ video.snippet.channelTitle }}</p>
-
-                                    <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="POST">
-                                        <input type="hidden" name="youtube_id" value="{{ video.id.videoId }}">
-                                        <input type="hidden" name="title" value="{{ video.snippet.title }}">
-                                        <button type="submit" class="add-video-btn">
-                                            <i class="fas fa-plus"></i> Προσθήκη στη Λίστα
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">Δε βρέθηκαν βίντεο για "{{ query }}". Δοκιμάστε άλλους όρους αναζήτησης.</div>
-                {% endif %}
-            </div>
-        {% else %}
-            <div class="search-help">
-                <p>Εισάγετε όρους αναζήτησης παραπάνω για να βρείτε βίντεο από το YouTube.</p>
-                <p>Μπορείτε να αναζητήσετε με βάση τον τίτλο, το κανάλι ή λέξεις-κλειδιά.</p>
-            </div>
-        {% endif %}
-        {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const methodBtns = document.querySelectorAll('.method-btn');
+    const manualMethod = document.getElementById('manual-method');
+    const searchMethod = document.getElementById('search-method');
+
+    methodBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            methodBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const method = this.getAttribute('data-method');
+            if (method === 'manual') {
+                manualMethod.style.display = 'block';
+                searchMethod.style.display = 'none';
+            } else {
+                manualMethod.style.display = 'none';
+                searchMethod.style.display = 'block';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
 
 <style>
     .search-container {
@@ -287,28 +283,3 @@
         }
     }
 </style>
-{% endblock %}
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const methodBtns = document.querySelectorAll('.method-btn');
-    const manualMethod = document.getElementById('manual-method');
-    const youtubeMethod = document.getElementById('youtube-method');
-
-    methodBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            methodBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            const method = this.getAttribute('data-method');
-            if (method === 'manual') {
-                manualMethod.style.display = 'block';
-                youtubeMethod.style.display = 'none';
-            } else {
-                manualMethod.style.display = 'none';
-                youtubeMethod.style.display = 'block';
-            }
-        });
-    });
-});
-</script>
