@@ -5,7 +5,7 @@
 
 // YouTube API Constants 
 define('YOUTUBE_API_KEY', $_ENV['YOUTUBE_API_KEY']);
-define('YOUTUBE_CLIENT_ID', '229014471482-cnd9rbd32ggpr0qnvehigmm7e6p0kek3.apps.googleusercontent.com'); 
+define('YOUTUBE_CLIENT_ID', '101637104101-m51bljq3iaj8fcd4t57lcrks4jevefvo.apps.googleusercontent.com'); 
 define('YOUTUBE_CLIENT_SECRET', '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');
 define('YOUTUBE_REDIRECT_URI', 'https://' . $_SERVER['HTTP_HOST'] . '/youtube/callback');
 define('YOUTUBE_API_URL', 'https://www.googleapis.com/youtube/v3/');
