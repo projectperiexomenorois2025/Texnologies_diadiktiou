@@ -4,7 +4,7 @@
  */
 
 // YouTube API Constants 
-define('YOUTUBE_API_KEY', getenv('YOUTUBE_API_KEY'));
+define('YOUTUBE_API_KEY', $_ENV['YOUTUBE_API_KEY']);
 define('YOUTUBE_CLIENT_ID', getenv('YOUTUBE_CLIENT_ID')); 
 define('YOUTUBE_CLIENT_SECRET', getenv('YOUTUBE_CLIENT_SECRET'));
 define('YOUTUBE_REDIRECT_URI', 'https://' . $_SERVER['HTTP_HOST'] . '/search_youtube.php');
