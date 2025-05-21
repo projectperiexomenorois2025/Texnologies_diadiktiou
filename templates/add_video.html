@@ -11,7 +11,31 @@
         </div>
 
         {% if not has_youtube_auth %}
-        <div class="youtube-auth-message">
+        <div class="video-input-method">
+            <button class="method-btn active" data-method="manual">Χειροκίνητη Εισαγωγή</button>
+            <button class="method-btn" data-method="youtube">Σύνδεση με YouTube</button>
+        </div>
+
+        <div id="manual-method">
+            <div class="warning-message">
+                <p><i class="fas fa-exclamation-triangle"></i> Προσοχή: Η χειροκίνητη εισαγωγή περιεχομένου θα επιφέρει σημαντικό βαθμολογικό πέναλτι.</p>
+            </div>
+            <form action="{{ url_for('add_video', playlist_id=playlist.id) }}" method="POST" class="manual-form">
+                <div class="form-group">
+                    <label for="youtube_id">YouTube Video ID</label>
+                    <input type="text" name="youtube_id" id="youtube_id" required placeholder="π.χ. dQw4w9WgXcQ">
+                </div>
+                <div class="form-group">
+                    <label for="title">Τίτλος Βίντεο</label>
+                    <input type="text" name="title" id="title" required placeholder="Εισάγετε τον τίτλο του βίντεο">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Προσθήκη Βίντεο
+                </button>
+            </form>
+        </div>
+
+        <div id="youtube-method" style="display: none;" class="youtube-auth-message">
             <div class="youtube-auth-content">
                 <h2>Απαιτείται Πρόσβαση YouTube</h2>
                 <p>Για να αναζητήσετε και να προσθέσετε βίντεο από το YouTube, χρειάζεται να συνδεθείτε με το λογαριασμό σας.</p>
@@ -265,3 +289,27 @@
     }
 </style>
 {% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const methodBtns = document.querySelectorAll('.method-btn');
+    const manualMethod = document.getElementById('manual-method');
+    const youtubeMethod = document.getElementById('youtube-method');
+
+    methodBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            methodBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const method = this.getAttribute('data-method');
+            if (method === 'manual') {
+                manualMethod.style.display = 'block';
+                youtubeMethod.style.display = 'none';
+            } else {
+                manualMethod.style.display = 'none';
+                youtubeMethod.style.display = 'block';
+            }
+        });
+    });
+});
+</script>
