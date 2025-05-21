@@ -25,7 +25,10 @@ def get_client_config():
             "client_secret": CLIENT_SECRET,
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
-            "redirect_uris": ["https://dfbc0bf8-a801-4318-99c6-963dc9419c92-00-3us2ncr363jxw.worf.replit.dev/youtube/callback"]
+            "redirect_uris": [
+                "https://dfbc0bf8-a801-4318-99c6-963dc9419c92-00-3us2ncr363jxw.worf.replit.dev/youtube/callback",
+                "https://dfbc0bf8-a801-4318-99c6-963dc9419c92-00-3us2ncr363jxw.worf.replit.dev/oauth2callback"
+            ]
         }
     }
 
