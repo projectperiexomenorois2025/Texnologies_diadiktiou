@@ -24,10 +24,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle follow/unfollow actions
     const followBtns = document.querySelectorAll('[data-action="follow"], [data-action="unfollow"]');
     followBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        btn.addEventListener('click', async function(e) {
             e.preventDefault();
             const userId = this.getAttribute('data-user-id');
             const action = this.getAttribute('data-action');
+            
+            try {
+                const response = await fetch('/follow/' + userId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `action=${action}`
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Toggle button state
+                    this.textContent = action === 'follow' ? 'Διακοπή Ακολούθησης' : 'Ακολούθησε';
+                    this.setAttribute('data-action', action === 'follow' ? 'unfollow' : 'follow');
+                    // Reload page to update followers count
+                    location.reload();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
 
             fetch('following.php', {
                 method: 'POST',
