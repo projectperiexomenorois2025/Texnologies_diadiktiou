@@ -35,7 +35,7 @@ def get_client_config():
             "token_uri": "https://oauth2.googleapis.com/token",
             "redirect_uris": [
                 "https://projectperiexomenorois2025.replit.app/youtube/callback",
-                "http://0.0.0.0:5000/youtube/callback"
+                "https://projectperiexomenorois2025.replit.app/oauth2callback"
             ]
         }
     }
