@@ -819,5 +819,112 @@ def search_youtube():
             'auth_url': url_for('youtube_auth')
         })
 
+# Export routes
+@app.route('/export')
+def export_page():
+    # Check if user is logged in
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να εξάγετε τα δεδομένα σας')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    
+    # Get user's playlists
+    playlists = Playlist.query.filter_by(user_id=user_id).all()
+    
+    return render_template('export.html', user=user, playlists=playlists)
+
+@app.route('/export/playlist/<int:playlist_id>')
+def export_playlist(playlist_id):
+    # Check if user is logged in
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να εξάγετε τα δεδομένα σας')
+        return redirect(url_for('login'))
+    
+    # Get playlist
+    playlist = Playlist.query.get_or_404(playlist_id)
+    
+    # Check if user owns the playlist or if it's public
+    if playlist.user_id != session['user_id'] and not playlist.is_public:
+        flash('Δεν έχετε δικαίωμα εξαγωγής αυτής της λίστας')
+        return redirect(url_for('playlists'))
+    
+    # Get playlist videos
+    videos = Video.query.filter_by(playlist_id=playlist_id).all()
+    
+    # Create JSON export
+    creator = User.query.get(playlist.user_id)
+    export_data = {
+        'playlist': {
+            'title': playlist.title,
+            'creator': creator.username,
+            'is_public': playlist.is_public,
+            'created_at': playlist.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'videos': []
+        }
+    }
+    
+    for video in videos:
+        export_data['playlist']['videos'].append({
+            'youtube_id': video.youtube_id,
+            'title': video.title,
+            'added_at': video.added_at.strftime('%Y-%m-%d %H:%M:%S')
+        })
+    
+    # Return JSON response
+    response = jsonify(export_data)
+    response.headers['Content-Disposition'] = f'attachment; filename=playlist_{playlist_id}.json'
+    return response
+
+@app.route('/export/all')
+def export_all_playlists():
+    # Check if user is logged in
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να εξάγετε τα δεδομένα σας')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    user = User.query.get_or_404(user_id)
+    
+    # Get all user's playlists
+    playlists = Playlist.query.filter_by(user_id=user_id).all()
+    
+    # Create JSON export
+    export_data = {
+        'user': {
+            'username': user.username,
+            'email': user.email,
+            'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'playlists': []
+        }
+    }
+    
+    for playlist in playlists:
+        playlist_data = {
+            'id': playlist.id,
+            'title': playlist.title,
+            'is_public': playlist.is_public,
+            'created_at': playlist.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'videos': []
+        }
+        
+        # Get videos for this playlist
+        videos = Video.query.filter_by(playlist_id=playlist.id).all()
+        
+        for video in videos:
+            playlist_data['videos'].append({
+                'youtube_id': video.youtube_id,
+                'title': video.title,
+                'added_at': video.added_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        
+        export_data['user']['playlists'].append(playlist_data)
+    
+    # Return JSON response
+    response = jsonify(export_data)
+    response.headers['Content-Disposition'] = f'attachment; filename={user.username}_playlists.json'
+    return response
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
