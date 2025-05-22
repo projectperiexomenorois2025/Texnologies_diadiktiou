@@ -20,17 +20,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Handle follow/unfollow actions
+    const followBtns = document.querySelectorAll('[data-action="follow"], [data-action="unfollow"]');
+    followBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const userId = this.getAttribute('data-user-id');
+            const action = this.getAttribute('data-action');
+
+            fetch('following.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `user_id=${userId}&action=${action}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Toggle button text and action
+                    this.textContent = action === 'follow' ? 'Unfollow' : 'Follow';
+                    this.setAttribute('data-action', action === 'follow' ? 'unfollow' : 'follow');
+
+                    // Reload the page to update followers count
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error processing request');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error processing request');
+            });
+        });
+    });
     
     // Initialize YouTube player if on playlist view page
     const youtubeContainer = document.getElementById('youtube-player');
     if (youtubeContainer) {
         initializeYouTubePlayer();
-    }
-    
-    // Handle follow/unfollow button click
-    const followBtn = document.getElementById('follow-btn');
-    if (followBtn) {
-        followBtn.addEventListener('click', handleFollowAction);
     }
     
     // Handle video list playback
@@ -156,42 +186,4 @@ function playNextVideo() {
         const firstVideoId = videos[0].getAttribute('data-video-id');
         playVideo(firstVideoId);
     }
-}
-
-/**
- * Handle follow/unfollow button click
- */
-function handleFollowAction(e) {
-    e.preventDefault();
-    
-    const userId = this.getAttribute('data-user-id');
-    const action = this.getAttribute('data-action'); // 'follow' or 'unfollow'
-    
-    // Send AJAX request to follow/unfollow
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'following.php', true);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function() {
-        if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-            try {
-                const response = JSON.parse(this.responseText);
-                if (response.success) {
-                    // Update button text and data-action
-                    const button = document.getElementById('follow-btn');
-                    if (action === 'follow') {
-                        button.textContent = 'Unfollow';
-                        button.setAttribute('data-action', 'unfollow');
-                    } else {
-                        button.textContent = 'Follow';
-                        button.setAttribute('data-action', 'follow');
-                    }
-                } else {
-                    alert('Error: ' + response.message);
-                }
-            } catch (e) {
-                console.error('Invalid JSON response:', e);
-            }
-        }
-    };
-    xhr.send(`user_id=${userId}&action=${action}`);
 }
