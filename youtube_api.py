@@ -33,7 +33,11 @@ def get_client_config():
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "redirect_uris": [
-                "https://pdf-reader-projectperiexom.replit.app/youtube/callback"
+                "https://pdf-reader-projectperiexom.replit.app/youtube/callback",
+                "https://projectperiexomenorois2025.replit.app/youtube/callback",
+                "https://pdf-reader.projectperiexom.replit.app/youtube/callback",
+                "https://pdf-reader.projectperiexom.replit.app/",
+                "https://dfbc0d58-a801-4318-99c6-965dc9419c92-00-9uc2ncr363yvw.worf.replit.dev/youtube/callback"
             ]
         }
     }
@@ -48,7 +52,7 @@ def get_oauth_flow():
         scopes=SCOPES,
         state=os.urandom(16).hex()
     )
-    flow.redirect_uri = 'https://pdf-reader-projectperiexom.replit.app/youtube/callback'
+    flow.redirect_uri = 'https://pdf-reader.projectperiexom.replit.app/youtube/callback'
     return flow
 
 def get_youtube_client(credentials):
