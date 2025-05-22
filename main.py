@@ -362,6 +362,20 @@ def edit_profile():
 
     return render_template('edit_profile.html', user=user)
 
+@app.route('/following')
+def following():
+    if 'user_id' not in session:
+        flash('Παρακαλώ συνδεθείτε για να δείτε τους ακολουθούμενους χρήστες')
+        return redirect(url_for('login'))
+    
+    user = User.query.get_or_404(session['user_id'])
+    following = db.session.query(User).join(Follower, User.id == Follower.following_id)\
+        .filter(Follower.follower_id == user.id).all()
+    followers = db.session.query(User).join(Follower, User.id == Follower.follower_id)\
+        .filter(Follower.following_id == user.id).all()
+    
+    return render_template('following.html', user=user, following=following, followers=followers)
+
 @app.route('/follow/<int:user_id>', methods=['POST'])
 def follow_user(user_id):
     # Check if user is logged in

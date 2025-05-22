@@ -1,0 +1,91 @@
+
+{% extends "layout.html" %}
+
+{% block title %}Ακολουθείτε - YouTube Playlist Manager{% endblock %}
+
+{% block content %}
+<section class="following-section">
+    <div class="container">
+        <h1>Ακολουθείτε</h1>
+        
+        <div class="following-grid">
+            <div class="following-list">
+                <h2>Χρήστες που ακολουθείτε</h2>
+                {% if following %}
+                    <div class="user-grid">
+                        {% for follow in following %}
+                            <div class="user-card">
+                                <h3>{{ follow.username }}</h3>
+                                <p>{{ follow.first_name }} {{ follow.last_name }}</p>
+                                <div class="user-actions">
+                                    <a href="{{ url_for('profile', user_id=follow.id) }}" class="btn">Προφίλ</a>
+                                    <form method="POST" action="{{ url_for('follow_user', user_id=follow.id) }}">
+                                        <input type="hidden" name="action" value="unfollow">
+                                        <button type="submit" class="btn btn-danger">Διακοπή</button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Δεν ακολουθείτε κανέναν χρήστη ακόμα.</p>
+                {% endif %}
+            </div>
+
+            <div class="followers-list">
+                <h2>Ακόλουθοι</h2>
+                {% if followers %}
+                    <div class="user-grid">
+                        {% for follower in followers %}
+                            <div class="user-card">
+                                <h3>{{ follower.username }}</h3>
+                                <p>{{ follower.first_name }} {{ follower.last_name }}</p>
+                                <div class="user-actions">
+                                    <a href="{{ url_for('profile', user_id=follower.id) }}" class="btn">Προφίλ</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p>Δεν έχετε ακόλουθους ακόμα.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.following-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.user-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.user-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.user-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+    .following-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+</style>
+{% endblock %}
