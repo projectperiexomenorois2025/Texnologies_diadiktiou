@@ -1,3 +1,4 @@
+
 import os
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -21,11 +22,11 @@ SCOPES = [
     'https://www.googleapis.com/auth/youtube.force-ssl'
 ]
 
-# Authorized test user email
-AUTHORIZED_EMAIL = 'projectperiexomenorois2025@gmail.com'
-
 def get_client_config():
     """Get the client configuration for OAuth2 flow."""
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise ValueError("Missing OAuth credentials")
+        
     return {
         "web": {
             "client_id": CLIENT_ID,
@@ -33,53 +34,47 @@ def get_client_config():
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "redirect_uris": [
-                "https://pdf-reader-projectperiexom.replit.app/youtube/callback",
-                "https://projectperiexomenorois2025.replit.app/youtube/callback",
-                "https://pdf-reader.projectperiexom.replit.app/youtube/callback",
-                "https://pdf-reader.projectperiexom.replit.app/",
-                "https://dfbc0d58-a801-4318-99c6-965dc9419c92-00-9uc2ncr363yvw.worf.replit.dev/youtube/callback"
+                "https://pdf-reader-projectperiexom.replit.app/youtube/callback"
             ]
         }
     }
 
 def get_oauth_flow():
     """Create and return an OAuth2 flow object."""
-    if not CLIENT_ID or not CLIENT_SECRET:
-        raise ValueError("Missing OAuth credentials. Please set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET in secrets.")
-
     flow = Flow.from_client_config(
         client_config=get_client_config(),
         scopes=SCOPES,
         state=os.urandom(16).hex()
     )
-    flow.redirect_uri = 'https://pdf-reader.projectperiexom.replit.app/youtube/callback'
+    flow.redirect_uri = 'https://pdf-reader-projectperiexom.replit.app/youtube/callback'
     return flow
 
 def get_youtube_client(credentials):
     """Build and return a YouTube API client using provided credentials."""
     try:
-        youtube = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials
+        return googleapiclient.discovery.build(
+            API_SERVICE_NAME, 
+            API_VERSION, 
+            credentials=credentials,
+            cache_discovery=False
         )
-        return youtube
     except Exception as e:
         current_app.logger.error(f"Error building YouTube client: {e}")
-        raise Exception(f"Failed to initialize YouTube client: {str(e)}")
+        return None
 
 def search_videos(youtube, query, max_results=10):
     """Search for videos on YouTube based on the query."""
     try:
         request = youtube.search().list(
             part="snippet",
+            maxResults=max_results,
             q=query,
-            type="video",
-            maxResults=max_results
+            type="video"
         )
-        response = request.execute()
-        return response
-    except googleapiclient.errors.HttpError as e:
-        current_app.logger.error(f"Error searching YouTube: {e}")
-        return {"items": []}
+        return request.execute()
+    except Exception as e:
+        current_app.logger.error(f"Error searching videos: {e}")
+        return {"error": str(e), "items": []}
 
 def get_video_details(youtube, video_id):
     """Get detailed information about a specific video."""
@@ -88,8 +83,7 @@ def get_video_details(youtube, video_id):
             part="snippet,contentDetails,statistics",
             id=video_id
         )
-        response = request.execute()
-        return response
-    except googleapiclient.errors.HttpError as e:
+        return request.execute()
+    except Exception as e:
         current_app.logger.error(f"Error getting video details: {e}")
         return None
