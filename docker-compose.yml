@@ -1,24 +1,29 @@
+version: '3.8'
 
-version: '3'
 services:
   web:
     build: .
     ports:
-      - "80:80"
+      - "5000:5000"
     depends_on:
       - db
     environment:
-      DB_HOST: db
-      DB_USER: streamify
-      DB_PASSWORD: streamify_pass
-      DB_NAME: streamify
+      - DATABASE_URL=postgresql://streamify:streamify@db:5432/streamify
+      - SESSION_SECRET=streamify_secret_key
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
 
   db:
-    image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: streamify
-      MYSQL_USER: streamify
-      MYSQL_PASSWORD: streamify_pass
-      MYSQL_ROOT_PASSWORD: root_pass
+    image: postgres:15-alpine
     volumes:
-      - ./setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - postgres_data:/var/lib/postgresql/data/
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_USER=streamify
+      - POSTGRES_PASSWORD=streamify
+      - POSTGRES_DB=streamify
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
