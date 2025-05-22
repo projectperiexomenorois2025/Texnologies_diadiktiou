@@ -1,4 +1,3 @@
-
 import os
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -44,7 +43,7 @@ def get_oauth_flow():
     """Create and return an OAuth2 flow object."""
     if not CLIENT_ID or not CLIENT_SECRET:
         raise ValueError("Missing OAuth credentials. Please set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET in secrets.")
-    
+
     flow = Flow.from_client_config(
         client_config=get_client_config(),
         scopes=SCOPES,
