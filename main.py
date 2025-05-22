@@ -22,7 +22,12 @@ app.secret_key = os.environ.get("SESSION_SECRET", "development-secret-key")
 def internal_error(error):
     db.session.rollback()
     app.logger.error(f'Server Error: {error}')
-    return render_template('error.html', error=error), 500
+    if app.debug:
+        # In debug mode, show detailed error
+        return render_template('error.html', error=str(error), debug_info=error.__dict__), 500
+    else:
+        # In production, show generic error
+        return render_template('error.html', error="Σφάλμα διακομιστή. Παρακαλώ προσπαθήστε ξανά αργότερα."), 500
 
 @app.errorhandler(404)
 def not_found_error(error):
