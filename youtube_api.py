@@ -33,8 +33,8 @@ def get_client_config():
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "redirect_uris": [
-                "https://projectperiexomenorois2025.replit.app/youtube/callback",
-                "https://projectperiexomenorois2025.replit.app/oauth2callback"
+                "https://pdf-reader-projectperiexom.replit.app/youtube/callback",
+                "https://pdf-reader-projectperiexom.replit.app/oauth2callback"
             ]
         }
     }
