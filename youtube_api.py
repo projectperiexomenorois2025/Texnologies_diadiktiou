@@ -48,7 +48,7 @@ def get_oauth_flow():
         scopes=SCOPES,
         state=os.urandom(16).hex()
     )
-    flow.redirect_uri = url_for('youtube_oauth_callback', _external=True, _scheme='https')
+    flow.redirect_uri = 'https://pdf-reader-projectperiexom.replit.app/youtube/callback'
     return flow
 
 def get_youtube_client(credentials):
