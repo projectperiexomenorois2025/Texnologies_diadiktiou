@@ -28,6 +28,11 @@ def internal_error(error):
 def not_found_error(error):
     return render_template('error.html', error=error), 404
 
+@app.errorhandler(400)
+def bad_request_error(error):
+    app.logger.error(f'Bad Request Error: {error}')
+    return render_template('error.html', error="Η αίτηση δεν μπορεί να επεξεργαστεί. Παρακαλώ ελέγξτε τα δεδομένα σας και προσπαθήστε ξανά."), 400
+
 # Configure the database
 # Το URI της βάσης δεδομένων
 database_url = os.environ.get("DATABASE_URL", "sqlite:///streamify.db")
