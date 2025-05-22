@@ -47,7 +47,8 @@ def get_oauth_flow():
     
     flow = Flow.from_client_config(
         client_config=get_client_config(),
-        scopes=SCOPES
+        scopes=SCOPES,
+        state=os.urandom(16).hex()
     )
     flow.redirect_uri = url_for('youtube_oauth_callback', _external=True, _scheme='https')
     return flow
