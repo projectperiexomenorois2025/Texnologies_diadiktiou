@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}YouTube Playlist Manager!{% endblock %}</title>
+    <title>{% block title %}YouTube Playlist Manager{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
@@ -20,7 +20,7 @@
                 
                 <nav class="main-nav">
                     <ul>
-                        <li><a href="{{ url_for('index') }}">Αρχική</a></li>
+                        <li><a href="{{ url_for('index') }}">Αρχική!</a></li>
                         <li><a href="{{ url_for('playlists') }}">Λίστες</a></li>
                         <li><a href="{{ url_for('about') }}">Σχετικά</a></li>
                         <li><a href="{{ url_for('help') }}">Βοήθεια</a></li>
